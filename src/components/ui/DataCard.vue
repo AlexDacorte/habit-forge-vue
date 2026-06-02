@@ -107,7 +107,6 @@ const getBarHeight = (value: number) => {
   height: 250px;
 }
 
-/* Eje Y */
 .y-axis {
   display: flex;
   flex-direction: column;
@@ -135,7 +134,6 @@ const getBarHeight = (value: number) => {
   border-left: 1px solid #777;
 }
 
-/* Cuadrícula */
 .grid-lines {
   position: absolute;
   top: 0;
@@ -157,6 +155,7 @@ const getBarHeight = (value: number) => {
 .grid-line.base-line {
   border-bottom: 1px solid #777;
 }
+
 .target-line {
   position: absolute;
   top: 0;

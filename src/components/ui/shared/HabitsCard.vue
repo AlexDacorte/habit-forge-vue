@@ -48,12 +48,10 @@ const getBarHeight = (value: number) => {
             ></div>
           </div>
 
-          <!-- Línea de Target -->
           <div class="target-line">
             <span class="target-text">Target</span>
           </div>
 
-          <!-- Barras -->
           <div class="bars-container">
             <div
               v-for="(day, index) in chartData"
@@ -157,7 +155,6 @@ const getBarHeight = (value: number) => {
 .grid-line.base-line {
   border-bottom: 1px solid #777;
 }
-
 .target-line {
   position: absolute;
   top: 0;

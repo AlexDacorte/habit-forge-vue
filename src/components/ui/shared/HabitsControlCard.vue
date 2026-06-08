@@ -1,11 +1,13 @@
 <template>
+  
   <div class="tracker-card">
+    
     <div class="color-band"></div>
 
     <div class="card-content">
       <div class="header">
-        <h2 class="title">{{ title }}</h2>
-        <p class="target-label">Target: {{ target }} glasses</p>
+        <h2 class="title">{{ props.habit.name }}</h2>
+        <p class="target-label">Target: {{ props.habit.description }} glasses</p>
       </div>
 
       <div class="progress-container">
@@ -47,27 +49,26 @@
 <script setup>
 import { ref, computed } from "vue";
 const props = defineProps({
-  title: {
-    type: String,
-    required: true,
-    default: "DRINK WATER",
-  },
-  target: {
-    type: Number,
-    required: true,
-    default: 8,
-  },
+  habit: {
+    type: Object,
+    required: true
+  }
 });
 
 const count = ref(0);
 
 const progressPercentage = computed(() => {
-  if (props.target <= 0) return 0;
-  return Math.min((count.value / props.target) * 100, 100);
+  if (props.habit.progress <= 0) return 0;
+  return Math.min((count.value / props.habit.progress) * 100, 100);
 });
 
+const currentColor = computed(() => {
+  return props.habit.color || "#5ce1e6";
+});
+
+
 const increment = () => {
-  if (count.value < props.target) {
+  if (count.value < props.habit.progress) {
     count.value++;
   }
 };
@@ -89,6 +90,13 @@ const decrement = () => {
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  transition: all 0.1s ease-in-out;
+}
+
+.tracker-card:hover {
+  transform: translate(-2px, 1px);
+  box-shadow: 6px 6px 0px #000000;
+  transition: all 0.1s ease-in-out;
 }
 
 .color-band {
@@ -97,7 +105,7 @@ const decrement = () => {
   top: 0;
   bottom: 0;
   width: 12px;
-  background-color: #5ce1e6;
+  background-color: v-bind(currentColor);
 }
 
 .card-content {
@@ -135,7 +143,7 @@ const decrement = () => {
 
 .progress-fill {
   height: 100%;
-  background-color: #5ce1e6;
+  background-color: v-bind(currentColor)  ;
   transition: width 0.3s ease-in-out;
   border-right: 2px solid #000;
 }

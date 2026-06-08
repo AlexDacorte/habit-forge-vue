@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import HabitsControlCard from "@/components/ui/shared/HabitsControlCard.vue";
+import AnalitycsButton from "@/components/ui/shared/AnalitycsButton.vue";
+import MockHabitsData from "@/mock/mockData.json";
+import { Icon } from "@iconify/vue";
 import { ref } from "vue";
 
 const categories = ["FITNESS", "HEALTH", "LEARNING", "MINDFULNESS"];
 const activeCategory = ref("ALL");
-
+const habits = ref(MockHabitsData.habits);
 const handleClick = (event: MouseEvent) => {
   console.log("New habit clicked");
 };
@@ -84,15 +87,22 @@ const setActiveCategory = (category: string) => {
       </button>
     </div>
 
-    <div class="progress-card">
+    <div class="progress-card" >
       <div class="progress-track">
         <div class="progress-fill" style="width: 0%"></div>
       </div>
       <span class="progress-text">0% COMPLETE</span>
     </div>
-    <div>
-      <HabitsControlCard></HabitsControlCard>
+    <div class="habits-list">
+      <div class="habit-item" v-for="habit in habits" :key="habit.id">
+        <div class="habit-tags">
+          <span v-for="tag in habit.tags" :key="tag" ><Icon icon="mdi:tag-outline" />{{ tag }}</span>
+        </div>
+        <HabitsControlCard :habit="habit" />
+      </div>
+      
     </div>
+    <AnalitycsButton />
   </div>
 </template>
 
@@ -212,6 +222,13 @@ const setActiveCategory = (category: string) => {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  transition: all 0.1s ease-in-out;
+}
+
+.progress-card:hover {
+  transform: translate(-2px, 1px);
+  box-shadow: 6px 6px 0px #000000;
+  transition: all 0.1s ease-in-out;
 }
 
 .progress-track {
@@ -235,5 +252,23 @@ const setActiveCategory = (category: string) => {
   font-size: 1rem;
   color: #000000;
   letter-spacing: 0.05em;
+}
+
+.habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.habit-tags {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  align-items: center;
+}
+.habit-item {
+  display: flex;
+  flex-direction: column;
 }
 </style>

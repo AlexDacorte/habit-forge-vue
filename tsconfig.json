@@ -14,6 +14,8 @@
     "noUncheckedIndexedAccess": true,
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "resolveJsonModule": true,
+    "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"]
   }
 }

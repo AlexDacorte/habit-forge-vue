@@ -6,10 +6,18 @@ import NavBar from "@/components/ui/shared/NavBar.vue";
 
 <template>
   <Header></Header>
-  <RouterView />
-  <NavBar ></NavBar>
+  <div class="app-content">
+    <RouterView />
+  </div>
+  <NavBar></NavBar>
 </template>
 
 <style scoped>
-
+.app-content {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 </style>

@@ -8,23 +8,61 @@
     </div>
 
     <div class="habit-actions">
-      <button class="action-btn btn-white" @click="$emit('edit')" aria-label="Edit habit">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <button
+        class="action-btn btn-white"
+        @click="$emit('edit')"
+        aria-label="Edit habit"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M12 20h9"></path>
           <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
         </svg>
       </button>
 
-      <button class="action-btn btn-white" @click="$emit('archive')" aria-label="Archive habit">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"></path>
+      <button
+        class="action-btn btn-white"
+        @click="$emit('archive')"
+        aria-label="Archive habit"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M21 8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"
+          ></path>
           <path d="M10 12h4"></path>
           <path d="M3 6h18"></path>
         </svg>
       </button>
 
-      <button class="action-btn btn-red" @click="$emit('delete')" aria-label="Delete habit">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <button
+        class="action-btn btn-red"
+        @click="$emit('delete')"
+        aria-label="Delete habit"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M3 6h18"></path>
           <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
           <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
@@ -38,19 +76,19 @@
 defineProps({
   title: {
     type: String,
-    default: 'DRINK WATER'
+    default: "DRINK WATER",
   },
   frequency: {
     type: String,
-    default: '8 glasses / day'
+    default: "8 glasses / day",
   },
   accentColor: {
     type: String,
-    default: '#00e5ff'
-  }
+    default: "#00e5ff",
+  },
 });
 
-defineEmits(['edit', 'archive', 'delete']);
+defineEmits(["edit", "archive", "delete"]);
 </script>
 
 <style scoped>
@@ -62,14 +100,23 @@ defineEmits(['edit', 'archive', 'delete']);
   border: 4px solid #000000;
   box-shadow: 5px 5px 0px 0px #000000;
   padding: 14px 20px 14px 28px;
-  font-family: 'Arial Black', -apple-system, BlinkMacSystemFont, sans-serif;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  font-family:
+    "Arial Black",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .habit-card:hover {
   transform: translate(3px, 3px);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
   box-shadow: 8px 8px 0px 0px #000000;
 }
 
@@ -93,7 +140,7 @@ defineEmits(['edit', 'archive', 'delete']);
 
 .habit-title {
   margin: 0 0 4px 0;
-  font-family: 'Impact', 'Arial Black', sans-serif;
+  font-family: "Impact", "Arial Black", sans-serif;
   font-size: 1.3rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -122,7 +169,9 @@ defineEmits(['edit', 'archive', 'delete']);
   box-shadow: 3px 3px 0px 0px #000000;
   cursor: pointer;
   padding: 0;
-  transition: transform 0.05s ease, box-shadow 0.05s ease;
+  transition:
+    transform 0.05s ease,
+    box-shadow 0.05s ease;
 }
 
 .action-btn svg {

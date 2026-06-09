@@ -1,13 +1,13 @@
 <template>
-  
   <div class="tracker-card">
-    
     <div class="color-band"></div>
 
     <div class="card-content">
       <div class="header">
         <h2 class="title">{{ props.habit.name }}</h2>
-        <p class="target-label">Target: {{ props.habit.description }} glasses</p>
+        <p class="target-label">
+          Target: {{ props.habit.description }} glasses
+        </p>
       </div>
 
       <div class="progress-container">
@@ -51,8 +51,8 @@ import { ref, computed } from "vue";
 const props = defineProps({
   habit: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const count = ref(0);
@@ -65,7 +65,6 @@ const progressPercentage = computed(() => {
 const currentColor = computed(() => {
   return props.habit.color || "#5ce1e6";
 });
-
 
 const increment = () => {
   if (count.value < props.habit.progress) {
@@ -91,6 +90,9 @@ const decrement = () => {
   box-sizing: border-box;
   overflow: hidden;
   transition: all 0.1s ease-in-out;
+  height: 100%;
+  max-height: 200px;
+  cursor: pointer;
 }
 
 .tracker-card:hover {
@@ -109,11 +111,10 @@ const decrement = () => {
 }
 
 .card-content {
-  padding: 20px 20px 20px 32px;
-}
-
-.header {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 20px;
 }
 
 .title {
@@ -137,13 +138,12 @@ const decrement = () => {
   height: 24px;
   background-color: #eae6db;
   border: 3px solid #000;
-  margin-bottom: 24px;
   box-sizing: border-box;
 }
 
 .progress-fill {
   height: 100%;
-  background-color: v-bind(currentColor)  ;
+  background-color: v-bind(currentColor);
   transition: width 0.3s ease-in-out;
   border-right: 2px solid #000;
 }

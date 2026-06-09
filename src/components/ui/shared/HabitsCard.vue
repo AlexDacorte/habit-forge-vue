@@ -81,6 +81,7 @@ const getBarHeight = (value: number) => {
   display: flex;
   justify-content: center;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  cursor: pointer;
 }
 
 .chart-card {

@@ -1,0 +1,29 @@
+{
+  "tags": [
+    {
+      "id": 1,
+      "name": "Health",
+      "color": "#4CAF50"
+    },
+    {
+      "id": 2,
+      "name": "Wellness",
+      "color": "#8BC34A"
+    },
+    {
+      "id": 3,
+      "name": "Fitness",
+      "color": "#2196F3"
+    },
+    {
+      "id": 4,
+      "name": "Personal Development",
+      "color": "#FF9800"
+    },
+    {
+      "id": 5,
+      "name": "Leisure",
+      "color": "#FF5722"
+    }
+  ]
+}

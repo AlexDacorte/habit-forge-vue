@@ -1,8 +1,8 @@
 <template>
   <nav class="neo-navbar">
     <div class="nav-container">
-      <button 
-        v-for="tab in tabs" 
+      <button
+        v-for="tab in tabs"
         :key="tab.id"
         class="nav-item"
         :class="{ 'is-active': activeTab === tab.id }"
@@ -16,39 +16,40 @@
 </template>
 
 <script setup>
-import { ref, h, } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, h } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
-const HomeIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2.5', strokeLinecap: 'round', strokeLinejoin: 'round' }, [
-  h('path', { d: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' }),
-  h('polyline', { points: '9 22 9 12 15 12 15 22' })
+const HomeIcon = () => h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, [
+  h("path", { d: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" }),
+  h("polyline", { points: "9 22 9 12 15 12 15 22" })
 ]);
 
-const HabitsIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2.5', strokeLinecap: 'round', strokeLinejoin: 'round' }, [
-  h('line', { x1: '4', y1: '6', x2: '14', y2: '6' }),
-  h('line', { x1: '4', y1: '12', x2: '11', y2: '12' }),
-  h('line', { x1: '4', y1: '18', x2: '11', y2: '18' }),
-  h('line', { x1: '16', y1: '12', x2: '22', y2: '12' }),
-  h('line', { x1: '19', y1: '9', x2: '19', y2: '15' })
+const HabitsIcon = () => h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, [
+  h("line", { x1: "4", y1: "6", x2: "14", y2: "6" }),
+  h("line", { x1: "4", y1: "12", x2: "11", y2: "12" }),
+  h("line", { x1: "4", y1: "18", x2: "11", y2: "18" }),
+  h("line", { x1: "16", y1: "12", x2: "22", y2: "12" }),
+  h("line", { x1: "19", y1: "9", x2: "19", y2: "15" })
 ]);
 
-const AnalyticsIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2.5', strokeLinecap: 'round', strokeLinejoin: 'round' }, [
-  h('line', { x1: '6', y1: '20', x2: '6', y2: '12' }),
-  h('line', { x1: '12', y1: '20', x2: '12', y2: '4' }),
-  h('line', { x1: '18', y1: '20', x2: '18', y2: '10' })
+const AnalyticsIcon = () => h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, [
+  h("line", { x1: "6", y1: "20", x2: "6", y2: "12" }),
+  h("line", { x1: "12", y1: "20", x2: "12", y2: "4" }),
+  h("line", { x1: "18", y1: "20", x2: "18", y2: "10" })
 ]);
 
 const tabs = [
-  { id: 'today', label: 'TODAY', icon: HomeIcon },
-  { id: 'habits', label: 'HABITS', icon: HabitsIcon },
-  { id: 'analytics', label: 'ANALYTICS', icon: AnalyticsIcon }
+  { id: "today", label: "TODAY", icon: HomeIcon },
+  { id: "habits", label: "HABITS", icon: HabitsIcon },
+  { id: "analytics", label: "ANALYTICS", icon: AnalyticsIcon }
 ];
 
-const activeTab = ref('today');
 const router = useRouter();
+const route = useRoute();
+
+const activeTab = computed(() => route.path.replace("/", "") || "today");
 
 const setActiveTab = (id) => {
-  activeTab.value = id;
   router.push(`/${id}`);
 };
 </script>

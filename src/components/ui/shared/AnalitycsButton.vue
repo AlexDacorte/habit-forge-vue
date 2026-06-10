@@ -1,7 +1,7 @@
 <template>
   <div class="analytics-btn-wrapper">
-    <button 
-      class="analytics-btn" 
+    <button
+      class="analytics-btn"
       :class="{ 'btn-shadow': hasShadow }"
       @click="$emit('click')"
     >
@@ -11,20 +11,20 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits } from "vue";
 
 defineProps({
   label: {
     type: String,
-    default: 'VIEW ANALYTICS →'
+    default: "VIEW ANALYTICS →",
   },
   hasShadow: {
     type: Boolean,
-    default: true
-  }
+    default: true,
+  },
 });
 
-defineEmits(['click']);
+defineEmits(["click"]);
 </script>
 
 <style scoped>
@@ -38,10 +38,12 @@ defineEmits(['click']);
 
 .analytics-btn {
   width: 100%;
-  max-width: 1200px; 
-  background-color: #e53e7e; 
+  max-width: 1200px;
+  background-color: #e53e7e;
   color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
   font-size: 1.15rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -51,7 +53,9 @@ defineEmits(['click']);
   cursor: pointer;
   position: relative;
   outline: none;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
 }
 
 .analytics-btn.btn-shadow {

@@ -1,5 +1,6 @@
 {
   "files": [],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
   "references": [
     {
       "path": "./tsconfig.node.json"
@@ -15,7 +16,6 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "resolveJsonModule": true,
-    "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"]
+    "resolveJsonModule": true
   }
 }

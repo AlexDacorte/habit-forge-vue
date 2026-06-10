@@ -5,13 +5,23 @@ import MockHabitsData from "@/mock/mockData.json";
 import MockTagsData from "@/mock/mockTags.json";
 import NeoBrutalismModal from "@/components/ui/NeoBrutalismModal.vue";
 import { Icon } from "@iconify/vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
 
 const activeCategory = ref("ALL");
 const categories = ref(MockTagsData.tags.map((tag) => tag.name));
-const habits = ref(MockHabitsData.habits);
+const habits = computed(() =>
+  MockHabitsData.habits.map((habit) => ({
+    ...habit,
+    tags: habit.tagsIds
+      .map((tagId) => MockTagsData.tags.find((tag) => tag.id === tagId)?.name)
+      .filter((tag): tag is string => Boolean(tag)),
+  })),
+);
 
 const isModalOpen = ref(false);
+const router = useRouter();
+
 const handleClickOpen = () => {
   isModalOpen.value = true;
 };
@@ -21,6 +31,10 @@ const handleClickClose = () => {
 };
 const setActiveCategory = (category: string) => {
   activeCategory.value = category;
+};
+
+const goToAnalytics = () => {
+  router.push("/analytics");
 };
 </script>
 
@@ -114,7 +128,7 @@ const setActiveCategory = (category: string) => {
         <HabitsControlCard :habit="habit" />
       </div>
     </div>
-    <AnalitycsButton />
+    <AnalitycsButton @click="goToAnalytics" />
   </div>
 </template>
 

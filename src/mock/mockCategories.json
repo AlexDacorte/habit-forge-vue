@@ -2,27 +2,32 @@
   "Categories": [
     {
       "id": 1,
-      "name": "Health",
+      "title": "Health",
+      "description": "Habits related to physical and mental well-being.",
       "color": "#4CAF50"
     },
     {
       "id": 2,
-      "name": "Wellness",
+      "title": "Wellness",
+      "description": "Habits focused on self-care and overall wellness.",
       "color": "#8BC34A"
     },
     {
       "id": 3,
-      "name": "Fitness",
+      "title": "Fitness",
+      "description": "Habits related to physical exercise and training.",
       "color": "#2196F3"
     },
     {
       "id": 4,
-      "name": "Personal Development",
+      "title": "Personal Development",
+      "description": "Habits focused on self-improvement and growth.",
       "color": "#FF9800"
     },
     {
       "id": 5,
-      "name": "Leisure",
+      "title": "Leisure",
+      "description": "Habits related to relaxation and enjoyment.",
       "color": "#FF5722"
     }
   ]

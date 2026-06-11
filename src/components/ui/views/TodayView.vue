@@ -1,29 +1,32 @@
 <script setup lang="ts">
 import HabitsControlCard from "@/components/ui/shared/HabitsControlCard.vue";
 import AnalitycsButton from "@/components/ui/shared/AnalitycsButton.vue";
-import MockHabitsData from "@/mock/mockData.json";
-import MockTagsData from "@/mock/mockTags.json";
 import NeoBrutalismModal from "@/components/ui/NeoBrutalismModal.vue";
 import { Icon } from "@iconify/vue";
-import { computed, ref } from "vue";
+import { useHabitStore } from "@/stores/useHabitStore";
 import { useRouter } from "vue-router";
+import { ref, onMounted, computed } from "vue";
+import type { Habit } from "@/types/habit";
+import type { Category } from "@/types/category";
 
-const activeCategory = ref("ALL");
-const categories = ref(MockTagsData.tags.map((tag) => tag.name));
-const habits = computed(() =>
-  MockHabitsData.habits.map((habit) => ({
-    ...habit,
-    tags: habit.tagsIds
-      .map((tagId) => MockTagsData.tags.find((tag) => tag.id === tagId)?.name)
-      .filter((tag): tag is string => Boolean(tag)),
-  })),
-);
+const useStore = useHabitStore();
+const habits = ref([] as Habit[]);
+const categories = ref([] as Category[]);
+onMounted(() => {
+  habits.value.push(...useStore.fetchHabits());
+  categories.value.push(...useStore.fetchCategories());
+});
 
+const activeCategory = ref<String>("ALL");
 const isModalOpen = ref(false);
 const router = useRouter();
 
 const handleClickOpen = () => {
   isModalOpen.value = true;
+};
+
+const handleCreate = () => {
+  console.log("form created");
 };
 
 const handleClickClose = () => {
@@ -70,11 +73,7 @@ const goToAnalytics = () => {
       </button>
     </header>
 
-    <NeoBrutalismModal
-      :is-open="isModalOpen"
-      title="Create New Habit"
-      @close="handleClickClose"
-    />
+    <NeoBrutalismModal @create="handleCreate" @close="handleClickClose" />
     <div class="filters-row">
       <button
         class="filter-tag"
@@ -86,10 +85,10 @@ const goToAnalytics = () => {
 
       <button
         v-for="cat in categories"
-        :key="cat"
+        :key="cat.id"
         class="filter-tag"
-        :class="{ active: activeCategory === cat }"
-        @click="setActiveCategory(cat)"
+        :class="{ active: activeCategory === cat.title }"
+        @click="setActiveCategory(cat.title)"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -108,7 +107,7 @@ const goToAnalytics = () => {
           ></path>
           <line x1="7" y1="7" x2="7.01" y2="7"></line>
         </svg>
-        {{ cat }}
+        {{ cat.title }}
       </button>
     </div>
 
@@ -121,7 +120,7 @@ const goToAnalytics = () => {
     <div class="habits-list">
       <div class="habit-item" v-for="habit in habits" :key="habit.id">
         <div class="habit-tags">
-          <span v-for="tag in habit.tags" :key="tag"
+          <span v-for="tag in habit.categoryIds" :key="tag"
             ><Icon icon="mdi:tag-outline" />{{ tag }}</span
           >
         </div>

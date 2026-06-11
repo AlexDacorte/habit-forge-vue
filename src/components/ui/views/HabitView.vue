@@ -4,7 +4,7 @@
       v-for="habit in habits"
       :key="habit.id"
       v-bind="habit"
-      :title="habit.name"
+      :title="habit.title"
       :frequency="habit.progress"
       :accentColor="habit.color"
     />
@@ -12,9 +12,14 @@
 </template>
 <script setup lang="ts">
 import HabitsCardMinimal from "@/components/ui/shared/HabitsCardMinimal.vue";
-import MockHabitsData from "@/mock/mockData.json";
-
-const habits = MockHabitsData.habits;
+import type { Habit } from "@/types/habit";
+import { useHabitStore } from "@/stores/useHabitStore";
+import { ref, onMounted } from "vue";
+const useStore = useHabitStore();
+const habits = ref<Habit[]>([]);
+onMounted(() => {
+  habits.value.push(...useStore.fetchHabits());
+});
 </script>
 <style scoped>
 .habits-view-wrapper {

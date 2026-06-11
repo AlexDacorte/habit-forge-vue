@@ -3,6 +3,7 @@ export type Habit = {
   title: string;
   description: string;
   categoryIds: string[];
+  progress: number;
   target: number;
   unit: string;
   color: string;

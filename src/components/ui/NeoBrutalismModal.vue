@@ -1,211 +1,358 @@
-<script setup>
-import { onMounted, onUnmounted } from "vue";
-
-const props = defineProps({
-  isOpen: {
-    type: Boolean,
-    required: true,
-  },
-  title: {
-    type: String,
-    default: "MODAL TITLE",
-  },
-  accentColor: {
-    type: String,
-    default: "#E15A84",
-  },
-});
-
-const emit = defineEmits(["close", "confirm"]);
-
-const handleKeyDown = (e) => {
-  if (e.key === "Escape" && props.isOpen) {
-    emit("close");
-  }
-};
-
-onMounted(() => window.addEventListener("keydown", handleKeyDown));
-onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
-</script>
-
 <template>
-  <Transition name="fade">
-    <div v-if="isOpen" class="nb-modal-overlay" @click.self="emit('close')">
-      <div
-        class="nb-modal-container"
-        :style="{ '--accent-color': accentColor }"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div class="nb-modal-top-bar"></div>
-
-        <header class="nb-modal-header">
-          <h2 class="nb-modal-title">{{ title.toUpperCase() }}</h2>
-          <button
-            class="nb-modal-close-btn"
-            @click="emit('close')"
-            aria-label="Close modal"
-          >
-            ✕
-          </button>
-        </header>
-
-        <div class="nb-modal-body">
-          <slot>
-            <p>
-              Your content goes here. You can pass any custom elements or forms
-              inside the default slot.
-            </p>
-          </slot>
-        </div>
-
-        <footer class="nb-modal-footer">
-          <button class="nb-btn nb-btn-secondary" @click="emit('close')">
-            CANCEL
-          </button>
-          <button class="nb-btn nb-btn-primary" @click="emit('confirm')">
-            CONFIRM →
-          </button>
-        </footer>
-      </div>
+  <div class="habit-modal">
+    <div class="modal-header">
+      <h2 class="modal-title">New Habit</h2>
+      <button type="button" @click="$emit('close')" class="close-btn">✕</button>
     </div>
-  </Transition>
+
+    <form @submit.prevent="handleSubmit" class="habit-form">
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input
+          v-model="form.title"
+          type="text"
+          placeholder="e.g. Drink water"
+          class="form-input"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea
+          v-model="form.description"
+          placeholder="Optional notes about this habit"
+          rows="3"
+          class="form-textarea"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half-width">
+          <label class="form-label">Target</label>
+          <input
+            v-model.number="form.target"
+            type="number"
+            placeholder="8"
+            class="form-input"
+            required
+          />
+        </div>
+        <div class="form-group half-width">
+          <label class="form-label">Unit</label>
+          <input
+            v-model="form.unit"
+            type="text"
+            placeholder="glasses"
+            class="form-input"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Categories</label>
+        <div class="category-grid">
+          <button
+            v-for="category in categories"
+            :key="category"
+            type="button"
+            @click="form.category = category"
+            :class="[
+              'category-btn',
+              { 'is-selected': form.category === category },
+            ]"
+          >
+            {{ category }}
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Color</label>
+        <div class="color-row">
+          <button
+            v-for="color in colors"
+            :key="color.value"
+            type="button"
+            @click="form.color = color.value"
+            :style="{ backgroundColor: color.hex }"
+            :class="[
+              'color-picker-btn',
+              { 'is-selected': form.color === color.value },
+            ]"
+            :aria-label="`Select ${color.value} color`"
+          ></button>
+        </div>
+      </div>
+
+      <div class="reminder-row">
+        <span class="form-label no-margin">Reminder</span>
+        <button
+          type="button"
+          @click="form.reminder = !form.reminder"
+          class="reminder-toggle-btn"
+        >
+          <span v-if="form.reminder" class="icon">🔔 ON</span>
+          <span v-else class="icon">🔕 OFF</span>
+        </button>
+      </div>
+
+      <button type="submit" class="submit-btn">Create Habit</button>
+    </form>
+  </div>
 </template>
 
+<script setup>
+import { reactive } from "vue";
+
+const emit = defineEmits(["close", "create"]);
+
+const form = reactive({
+  title: "",
+  description: "",
+  target: null,
+  unit: "",
+  category: "OTHER",
+  color: "purple",
+  reminder: false,
+});
+
+const categories = [
+  "HEALTH",
+  "FITNESS",
+  "LEARNING",
+  "MINDFULNESS",
+  "PRODUCTIVITY",
+  "CREATIVE",
+  "SOCIAL",
+  "OTHER",
+];
+
+const colors = [
+  { value: "yellow", hex: "#F4D03F" },
+  { value: "pink", hex: "#E54B86" },
+  { value: "cyan", hex: "#29D1E6" },
+  { value: "green", hex: "#7ED321" },
+  { value: "orange", hex: "#F5A623" },
+  { value: "purple", hex: "#6320EE" },
+];
+
+const handleSubmit = () => {
+  emit("create", { ...form });
+};
+</script>
+
 <style scoped>
-.nb-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  padding: 1.5rem;
+.habit-modal {
+  --border-color: #000000;
+  --primary-purple: #6320ee;
+
+  width: 100%;
+  max-width: 440px;
+  background-color: #ffffff;
+  border: 4px solid var(--border-color);
+  padding: 24px;
+  font-family: "Courier New", Courier, monospace;
+  color: var(--border-color);
+  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+  box-sizing: border-box;
 }
 
-.nb-modal-container {
-  position: relative;
-  background-color: #fffdf6;
-  border: 4px solid #000000;
-  box-shadow: 8px 8px 0px #000000;
-  width: 100%;
-  max-width: 550px;
+.habit-modal * {
+  box-sizing: border-box;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-b: 4px solid var(--border-color);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+  color: var(--border-color);
+}
+
+.habit-form {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  font-family: "Courier New", Courier, monospace, system-ui;
+  gap: 20px;
 }
 
-.nb-modal-top-bar {
-  height: 8px;
-  background-color: var(--accent-color);
-  border-bottom: 4px solid #000000;
-}
-
-.nb-modal-header {
+.form-group {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 4px solid #000000;
-  background-color: #ffffff;
+  flex-direction: column;
 }
 
-.nb-modal-title {
-  font-size: 1.35rem;
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.half-width {
+  flex: 1;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
   font-weight: 900;
-  color: #000000;
-  margin: 0;
-  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
 }
 
-.nb-modal-close-btn {
-  background: none;
-  border: 2px solid transparent;
-  font-size: 1.2rem;
+.form-label.no-margin {
+  margin-bottom: 0;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  border: 2px solid var(--border-color);
+  padding: 12px;
+  font-family: inherit;
+  font-size: 15px;
   font-weight: bold;
+  background: #ffffff;
+  color: var(--border-color);
+  outline: none;
+  transition: box-shadow 0.15s ease-in-out;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #b0b0b0;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.form-textarea {
+  resize: vertical;
+}
+
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-btn {
+  background-color: #ffffff;
+  color: var(--border-color);
+  border: 2px solid var(--border-color);
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
   cursor: pointer;
-  padding: 2px 6px;
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
   transition: all 0.1s ease;
 }
 
-.nb-modal-close-btn:hover {
-  border-color: #000000;
-  background-color: #f0f0f0;
-}
-
-.nb-modal-body {
-  padding: 1.5rem;
-  font-size: 1rem;
-  color: #1a1a1a;
-  line-height: 1.5;
-  background-color: #fffdf6;
-}
-
-.nb-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  background-color: #ffffff;
-  border-top: 4px solid #000000;
-}
-
-.nb-btn {
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 0.95rem;
-  padding: 0.6rem 1.2rem;
-  border: 3px solid #000000;
-  cursor: pointer;
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.1s ease;
-}
-
-.nb-btn-secondary {
-  background-color: #ffffff;
-  color: #000000;
-  box-shadow: 3px 3px 0px #000000;
-}
-
-.nb-btn-primary {
-  background-color: var(--accent-color);
+.category-btn.is-selected {
+  background-color: var(--primary-purple);
   color: #ffffff;
-  box-shadow: 3px 3px 0px #000000;
-  text-shadow: 1px 1px 0px #000000;
 }
 
-.nb-btn:active {
+.category-btn:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px #000000;
+  box-shadow: none;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+.color-row {
+  display: flex;
+  gap: 8px;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.color-picker-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s ease;
 }
 
-.fade-enter-active .nb-modal-container {
-  animation: pop-in 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.color-picker-btn:hover {
+  transform: scale(1.05);
 }
 
-@keyframes pop-in {
-  0% {
-    transform: scale(0.92);
-  }
-  100% {
-    transform: scale(1);
-  }
+.color-picker-btn.is-selected {
+  border: 3px solid var(--border-color);
+  outline: 2px solid var(--border-color);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  transform: scale(1.05);
+}
+
+.reminder-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.reminder-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #ffffff;
+  border: 2px solid var(--border-color);
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.reminder-toggle-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.submit-btn {
+  width: 100%;
+  background-color: var(--primary-purple);
+  color: #ffffff;
+  border: 4px solid var(--border-color);
+  padding: 16px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  transition: all 0.1s ease;
+}
+
+.submit-btn:hover {
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.submit-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
 }
 </style>

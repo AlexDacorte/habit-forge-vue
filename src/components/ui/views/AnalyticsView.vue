@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { Icon } from "@iconify/vue";
 
-type HabitAnalytics = {
+type Habittracking = {
   id: number;
   name: string;
   color: string;
@@ -49,9 +49,9 @@ const habits = [
     completionRate: 79,
     dailyCompletions: [4, 6, 7, 6, 8, 7, 8, 8, 7, 8, 6, 7, 8, 7],
   },
-] satisfies HabitAnalytics[];
+] satisfies Habittracking[];
 
-const defaultHabit = habits[0] as HabitAnalytics;
+const defaultHabit = habits[0] as Habittracking;
 
 const labels = [
   "May 27",
@@ -73,20 +73,23 @@ const labels = [
 const selectedHabitId = ref(defaultHabit.id);
 const chartMax = 8;
 
-const selectedHabit = computed<HabitAnalytics>(
-  () => habits.find((habit) => habit.id === selectedHabitId.value) ?? defaultHabit,
+const selectedHabit = computed<Habittracking>(
+  () =>
+    habits.find((habit) => habit.id === selectedHabitId.value) ?? defaultHabit,
 );
 
-const targetLineOffset = computed(() => `${100 - (chartMax / chartMax) * 100}%`);
+const targetLineOffset = computed(
+  () => `${100 - (chartMax / chartMax) * 100}%`,
+);
 </script>
 
 <template>
-  <section class="analytics-view">
-    <header class="analytics-header">
-      <h1 class="analytics-title">ANALYTICS</h1>
+  <section class="tracking-view">
+    <header class="tracking-header">
+      <h1 class="tracking-title">tracking</h1>
     </header>
 
-    <div class="habit-tabs" role="tablist" aria-label="Habit analytics filters">
+    <div class="habit-tabs" role="tablist" aria-label="Habit tracking filters">
       <button
         v-for="habit in habits"
         :key="habit.id"
@@ -101,7 +104,10 @@ const targetLineOffset = computed(() => `${100 - (chartMax / chartMax) * 100}%`)
     </div>
 
     <div class="stats-grid">
-      <article class="stat-card stat-card-accent" :style="{ '--accent-color': selectedHabit.color }">
+      <article
+        class="stat-card stat-card-accent"
+        :style="{ '--accent-color': selectedHabit.color }"
+      >
         <Icon icon="solar:flame-bold-outline" class="stat-icon" />
         <strong class="stat-value">{{ selectedHabit.currentStreak }}</strong>
         <span class="stat-label">CURRENT STREAK</span>
@@ -143,13 +149,18 @@ const targetLineOffset = computed(() => `${100 - (chartMax / chartMax) * 100}%`)
         </div>
 
         <div class="bars">
-          <div v-for="(value, index) in selectedHabit.dailyCompletions" :key="labels[index]" class="bar-group">
+          <div
+            v-for="(value, index) in selectedHabit.dailyCompletions"
+            :key="labels[index]"
+            class="bar-group"
+          >
             <span class="bar-value">{{ value > 0 ? value : "" }}</span>
             <div
               class="bar"
               :style="{
                 height: `${(value / chartMax) * 100}%`,
-                backgroundColor: value > 0 ? selectedHabit.color : 'transparent',
+                backgroundColor:
+                  value > 0 ? selectedHabit.color : 'transparent',
               }"
             />
             <span class="bar-label">{{ labels[index] }}</span>
@@ -161,7 +172,7 @@ const targetLineOffset = computed(() => `${100 - (chartMax / chartMax) * 100}%`)
 </template>
 
 <style scoped>
-.analytics-view {
+.tracking-view {
   width: 100%;
   max-width: 1120px;
   padding: 28px 22px 36px;
@@ -172,13 +183,13 @@ const targetLineOffset = computed(() => `${100 - (chartMax / chartMax) * 100}%`)
   color: #111111;
 }
 
-.analytics-header {
+.tracking-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.analytics-title,
+.tracking-title,
 .panel-title,
 .stat-label,
 .panel-metric,
@@ -190,7 +201,7 @@ const targetLineOffset = computed(() => `${100 - (chartMax / chartMax) * 100}%`)
     "Courier New", monospace;
 }
 
-.analytics-title {
+.tracking-title {
   margin: 0;
   font-size: clamp(2.6rem, 6vw, 4rem);
   line-height: 0.95;
@@ -213,7 +224,10 @@ const targetLineOffset = computed(() => `${100 - (chartMax / chartMax) * 100}%`)
   font-size: clamp(0.95rem, 2vw, 1.1rem);
   font-weight: 900;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease;
 }
 
 .habit-tab.is-active {
@@ -393,7 +407,7 @@ const targetLineOffset = computed(() => `${100 - (chartMax / chartMax) * 100}%`)
 }
 
 @media (max-width: 820px) {
-  .analytics-view {
+  .tracking-view {
     padding: 22px 16px 28px;
     gap: 22px;
   }

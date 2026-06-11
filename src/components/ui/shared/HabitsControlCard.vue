@@ -165,7 +165,6 @@ const decrement = () => {
 
 .btn {
   width: 44px;
-  height: 44px;
   background-color: #fff;
   border: 4px solid #000;
   box-shadow: 4px 4px 0 #000;

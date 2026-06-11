@@ -1,28 +1,63 @@
 {
   "habits": [
     {
-      "id": 1,
-      "name": "Drink Water",
-      "description": "Drink at least 10 glasses of water daily.",
-      "progress": 10,
-      "tagsIds": [1, 2],
-      "color": "#4CAF50"
+      "id": "hb-001",
+      "title": "Morning Hydration",
+      "description": "Drink water immediately after waking up to kickstart metabolism.",
+      "categoryIds": ["cat-health", "cat-morning"],
+      "target": 2000,
+      "unit": "ml",
+      "color": "#3B82F6",
+      "createdAt": "2026-01-15T07:00:00Z",
+      "archived": false,
+      "reminderTime": "07:15"
     },
     {
-      "id": 2,
-      "name": "Exercise",
-      "description": "Engage in physical activity for at least 20 minutes.",
-      "progress": 20,
-      "tagsIds": [1, 3],
-      "color": "#2196F3"
+      "id": "hb-002",
+      "title": "Daily LeetCode Challenge",
+      "description": "Solve at least one medium-level algorithm problem to stay sharp.",
+      "categoryIds": ["cat-coding", "cat-career"],
+      "target": 1,
+      "unit": "problem",
+      "color": "#10B981",
+      "createdAt": "2026-02-10T18:30:00Z",
+      "archived": false,
+      "reminderTime": "19:00"
     },
     {
-      "id": 3,
-      "name": "Read Books",
-      "description": "Read for at least 20 minutes.",
-      "progress": 20,
-      "tagsIds": [4, 5],
-      "color": "#FF9800"
+      "id": "hb-003",
+      "title": "Evening Cardio Running",
+      "description": "Outdoor running session or treadmill intervals at the gym.",
+      "categoryIds": ["cat-fitness"],
+      "target": 5,
+      "unit": "km",
+      "color": "#EF4444",
+      "createdAt": "2026-03-01T12:00:00Z",
+      "archived": false,
+      "reminderTime": "18:00"
+    },
+    {
+      "id": "hb-004",
+      "title": "Read Tech Documentation",
+      "description": "Read through framework documentation or software architecture articles.",
+      "categoryIds": ["cat-coding", "cat-learning"],
+      "target": 30,
+      "unit": "minutes",
+      "color": "#F59E0B",
+      "createdAt": "2025-11-20T09:00:00Z",
+      "archived": true
+    },
+    {
+      "id": "hb-005",
+      "title": "Mindful Meditation",
+      "description": "Deep breathing exercises and mindfulness to decompress.",
+      "categoryIds": ["cat-health", "cat-mental"],
+      "target": 15,
+      "unit": "minutes",
+      "color": "#8B5CF6",
+      "createdAt": "2026-05-12T21:45:00Z",
+      "archived": false,
+      "reminderTime": "22:00"
     }
   ]
 }

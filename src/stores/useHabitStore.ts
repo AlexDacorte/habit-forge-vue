@@ -4,14 +4,19 @@ import { Habit } from "@/types/habit";
 
 export const useHabitStore = defineStore("habits", {
   state: () => ({
-    habits: [],
+    habits: [] as Habit[],
     isLoading: false,
     error: null,
   }),
   getters: {
     getHabits: (state) => {
-      state.habits;
+      return state.habits;
     },
   },
-  actions: {},
-});
+  actions: {
+    createHabit(...habit: Habit[]) {
+      this.habits=[...this.habits, ...habit];
+      localStorage.setItem('habit-storage', JSON.stringify(this.habits));
+    },
+  }});
+

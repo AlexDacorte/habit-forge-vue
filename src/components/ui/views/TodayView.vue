@@ -5,7 +5,7 @@ import NeoBrutalismModal from "@/components/ui/NeoBrutalismModal.vue";
 import { Icon } from "@iconify/vue";
 import { useHabitStore } from "@/stores/useHabitStore";
 import { useRouter } from "vue-router";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onBeforeMount, computed } from "vue";
 import type { Habit } from "@/types/habit";
 import type { Category } from "@/types/category";
 
@@ -17,7 +17,7 @@ onMounted(() => {
   categories.value.push(...useStore.fetchCategories());
 });
 
-const activeCategory = ref<String>("ALL");
+const activeCategory = ref<Category | null>();
 const isModalOpen = ref(false);
 const router = useRouter();
 
@@ -32,12 +32,22 @@ const handleCreate = () => {
 const handleClickClose = () => {
   isModalOpen.value = false;
 };
-const setActiveCategory = (category: string) => {
-  activeCategory.value = category;
+const setActiveCategory = (categoryId?: string) => {
+  if (categoryId) {
+    activeCategory.value = categories.value.find(
+      (cat) => (cat.id = categoryId),
+    );
+  } else {
+    activeCategory.value = null;
+  }
 };
 
+const currentActiveCategory = computed(() =>
+  activeCategory.value?.id ? activeCategory.value.id : "none",
+);
+
 const goToAnalytics = () => {
-  router.push("/analytics");
+  router.push("/tracking");
 };
 </script>
 
@@ -73,12 +83,16 @@ const goToAnalytics = () => {
       </button>
     </header>
 
-    <NeoBrutalismModal @create="handleCreate" @close="handleClickClose" />
+    <NeoBrutalismModal
+      @create="handleCreate"
+      @close="handleClickClose"
+      :isOpen="isModalOpen"
+    />
     <div class="filters-row">
       <button
         class="filter-tag"
-        :class="{ active: activeCategory === 'ALL' }"
-        @click="setActiveCategory('ALL')"
+        :class="{ active: activeCategory === null }"
+        @click="setActiveCategory()"
       >
         ALL
       </button>
@@ -87,8 +101,8 @@ const goToAnalytics = () => {
         v-for="cat in categories"
         :key="cat.id"
         class="filter-tag"
-        :class="{ active: activeCategory === cat.title }"
-        @click="setActiveCategory(cat.title)"
+        :class="{ active: activeCategory === cat }"
+        @click="setActiveCategory(cat.id)"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -124,7 +138,9 @@ const goToAnalytics = () => {
             ><Icon icon="mdi:tag-outline" />{{ tag }}</span
           >
         </div>
-        <HabitsControlCard :habit="habit" />
+        <div v-if="habit.categoryIds.includes(currentActiveCategory)">
+          <HabitsControlCard :habit="habit" />
+        </div>
       </div>
     </div>
     <AnalitycsButton @click="goToAnalytics" />
@@ -302,6 +318,5 @@ const goToAnalytics = () => {
 }
 
 @media (min-width: 768px) {
-  /* Custom CSS */
 }
 </style>

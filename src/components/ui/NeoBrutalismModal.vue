@@ -1,105 +1,110 @@
 <template>
-  <div class="habit-modal">
-    <div class="modal-header">
-      <h2 class="modal-title">New Habit</h2>
-      <button type="button" @click="$emit('close')" class="close-btn">✕</button>
-    </div>
-
-    <form @submit.prevent="handleSubmit" class="habit-form">
-      <div class="form-group">
-        <label class="form-label">Title</label>
-        <input
-          v-model="form.title"
-          type="text"
-          placeholder="e.g. Drink water"
-          class="form-input"
-          required
-        />
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Description</label>
-        <textarea
-          v-model="form.description"
-          placeholder="Optional notes about this habit"
-          rows="3"
-          class="form-textarea"
-        ></textarea>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group half-width">
-          <label class="form-label">Target</label>
-          <input
-            v-model.number="form.target"
-            type="number"
-            placeholder="8"
-            class="form-input"
-            required
-          />
-        </div>
-        <div class="form-group half-width">
-          <label class="form-label">Unit</label>
-          <input
-            v-model="form.unit"
-            type="text"
-            placeholder="glasses"
-            class="form-input"
-            required
-          />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Categories</label>
-        <div class="category-grid">
-          <button
-            v-for="category in categories"
-            :key="category"
-            type="button"
-            @click="form.category = category"
-            :class="[
-              'category-btn',
-              { 'is-selected': form.category === category },
-            ]"
-          >
-            {{ category }}
-          </button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Color</label>
-        <div class="color-row">
-          <button
-            v-for="color in colors"
-            :key="color.value"
-            type="button"
-            @click="form.color = color.value"
-            :style="{ backgroundColor: color.hex }"
-            :class="[
-              'color-picker-btn',
-              { 'is-selected': form.color === color.value },
-            ]"
-            :aria-label="`Select ${color.value} color`"
-          ></button>
-        </div>
-      </div>
-
-      <div class="reminder-row">
-        <span class="form-label no-margin">Reminder</span>
-        <button
-          type="button"
-          @click="form.reminder = !form.reminder"
-          class="reminder-toggle-btn"
-        >
-          <span v-if="form.reminder" class="icon">🔔 ON</span>
-          <span v-else class="icon">🔕 OFF</span>
+  <div class="habit-modal" v-if="isOpen">
+    <div class="modal-overlay"></div>
+    <div class="modal-body">
+      <div class="modal-header">
+        <h2 class="modal-title">New Habit</h2>
+        <button type="button" @click="$emit('close')" class="close-btn">
+          ✕
         </button>
       </div>
 
-      <button type="submit" class="submit-btn">Create Habit</button>
-    </form>
+      <form @submit.prevent="handleSubmit" class="habit-form">
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input
+            v-model="form.title"
+            type="text"
+            placeholder="e.g. Drink water"
+            class="form-input"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea
+            v-model="form.description"
+            placeholder="Optional notes about this habit"
+            rows="3"
+            class="form-textarea"
+          ></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label class="form-label">Target</label>
+            <input
+              v-model.number="form.target"
+              type="number"
+              placeholder="8"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group half-width">
+            <label class="form-label">Unit</label>
+            <input
+              v-model="form.unit"
+              type="text"
+              placeholder="glasses"
+              class="form-input"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Categories</label>
+          <div class="category-grid">
+            <button
+              v-for="category in categories"
+              :key="category"
+              type="button"
+              @click="form.category = category"
+              :class="[
+                'category-btn',
+                { 'is-selected': form.category === category },
+              ]"
+            >
+              {{ category }}
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <div class="color-row">
+            <button
+              v-for="color in colors"
+              :key="color.value"
+              type="button"
+              @click="form.color = color.value"
+              :style="{ backgroundColor: color.hex }"
+              :class="[
+                'color-picker-btn',
+                { 'is-selected': form.color === color.value },
+              ]"
+              :aria-label="`Select ${color.value} color`"
+            ></button>
+          </div>
+        </div>
+
+        <div class="reminder-row">
+          <span class="form-label no-margin">Reminder</span>
+          <button
+            type="button"
+            @click="form.reminder = !form.reminder"
+            class="reminder-toggle-btn"
+          >
+            <span v-if="form.reminder" class="icon">🔔 ON</span>
+            <span v-else class="icon">🔕 OFF</span>
+          </button>
+        </div>
+
+        <button type="submit" class="submit-btn">Create Habit</button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -129,6 +134,13 @@ const categories = [
   "OTHER",
 ];
 
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const colors = [
   { value: "yellow", hex: "#F4D03F" },
   { value: "pink", hex: "#E54B86" },
@@ -145,9 +157,18 @@ const handleSubmit = () => {
 
 <style scoped>
 .habit-modal {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+}
+.modal-body {
+  position: relative;
+  margin: 6rem auto;
   --border-color: #000000;
   --primary-purple: #6320ee;
-
+  z-index: 8;
   width: 100%;
   max-width: 440px;
   background-color: #ffffff;
@@ -157,8 +178,18 @@ const handleSubmit = () => {
   color: var(--border-color);
   box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
   box-sizing: border-box;
+  overflow: hidden;
 }
-
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 5;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+}
 .habit-modal * {
   box-sizing: border-box;
 }

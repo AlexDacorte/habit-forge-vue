@@ -5,7 +5,7 @@ import NeoBrutalismModal from "@/components/ui/NeoBrutalismModal.vue";
 import { Icon } from "@iconify/vue";
 import { useHabitStore } from "@/stores/useHabitStore";
 import { useRouter } from "vue-router";
-import { ref, onMounted, onBeforeMount, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import type { Habit } from "@/types/habit";
 import type { Category } from "@/types/category";
 
@@ -48,6 +48,10 @@ const filteredHabits = computed(() => {
     activeCategory?.value.every((cat) => habit.categoryIds.includes(cat.id)),
   );
 });
+
+const getCategoryToShow = (habit: Habit) => {
+  return categories.value.filter((cat) => habit.categoryIds.includes(cat.id));
+};
 </script>
 
 <template>
@@ -90,8 +94,8 @@ const filteredHabits = computed(() => {
     <div class="filters-row">
       <button
         class="filter-tag"
-        :class="{ active: activeCategory === categories }"
-        @click="setActiveCategory(categories)"
+        :class="{ active: !activeCategory || activeCategory.length === 0 }"
+        @click="setActiveCategory([])"
       >
         ALL
       </button>
@@ -100,7 +104,9 @@ const filteredHabits = computed(() => {
         v-for="cat in categories"
         :key="cat.id"
         class="filter-tag"
-        :class="{ active: activeCategory?.at(0) === cat }"
+        :class="{
+          active: activeCategory?.at(0) === cat,
+        }"
         @click="setActiveCategory([cat])"
       >
         <svg
@@ -133,8 +139,8 @@ const filteredHabits = computed(() => {
     <div class="habits-list">
       <div class="habit-item" v-for="habit in filteredHabits" :key="habit.id">
         <div class="habit-tags">
-          <span v-for="cat in habit.categoryIds" :key="cat"
-            ><Icon icon="mdi:tag-outline" />{{ cat }}</span
+          <span v-for="cat in getCategoryToShow(habit)" :key="cat.id"
+            ><Icon icon="mdi:tag-outline" />{{ cat.title }}</span
           >
         </div>
 

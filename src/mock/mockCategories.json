@@ -1,37 +1,37 @@
 {
   "Categories": [
     {
-      "id": "hb-001",
+      "id": "hc-001",
       "title": "Health",
       "description": "Habits related to physical and mental well-being.",
       "color": "#4CAF50"
     },
     {
-      "id": "hb-002",
+      "id": "hc-002",
       "title": "Wellness",
       "description": "Habits focused on self-care and overall wellness.",
       "color": "#8BC34A"
     },
     {
-      "id": "hb-003",
+      "id": "hc-003",
       "title": "Fitness",
       "description": "Habits related to physical exercise and training.",
       "color": "#2196F3"
     },
     {
-      "id": "hb-004",
+      "id": "hc-004",
       "title": "Personal Development",
       "description": "Habits focused on self-improvement and growth.",
       "color": "#FF9800"
     },
     {
-      "id": "hb-005",
+      "id": "hc-005",
       "title": "Leisure",
       "description": "Habits related to relaxation and enjoyment.",
       "color": "#FF5722"
     },
     {
-      "id": "hb-005",
+      "id": "hc-006",
       "title": "money",
       "description": "Habits related to money making.",
       "color": "#FF5730"

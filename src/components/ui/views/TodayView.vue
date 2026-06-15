@@ -10,14 +10,14 @@ import type { Habit } from "@/types/habit";
 import type { Category } from "@/types/category";
 
 const useStore = useHabitStore();
-const habits = ref([] as Habit[]);
-const categories = ref([] as Category[]);
+const habits = ref<Habit[]>([] as Habit[]);
+const categories = ref<Category[]>([] as Category[]);
 onMounted(() => {
   habits.value.push(...useStore.fetchHabits());
   categories.value.push(...useStore.fetchCategories());
 });
 
-const activeCategory = ref<Category | null>();
+const activeCategory = ref<Category[]>([] as Category[]);
 const isModalOpen = ref(false);
 const router = useRouter();
 
@@ -32,23 +32,22 @@ const handleCreate = () => {
 const handleClickClose = () => {
   isModalOpen.value = false;
 };
-const setActiveCategory = (categoryId?: string) => {
-  if (categoryId) {
-    activeCategory.value = categories.value.find(
-      (cat) => (cat.id = categoryId),
-    );
-  } else {
-    activeCategory.value = null;
-  }
+const setActiveCategory = (categories: Category[]) => {
+  activeCategory.value = [...categories];
 };
-
-const currentActiveCategory = computed(() =>
-  activeCategory.value?.id ? activeCategory.value.id : "none",
-);
 
 const goToAnalytics = () => {
   router.push("/tracking");
 };
+
+const filteredHabits = computed(() => {
+  if (!activeCategory.value || activeCategory.value.length === 0) {
+    return habits.value;
+  }
+  return habits.value.filter((habit) =>
+    activeCategory?.value.every((cat) => habit.categoryIds.includes(cat.id)),
+  );
+});
 </script>
 
 <template>
@@ -91,8 +90,8 @@ const goToAnalytics = () => {
     <div class="filters-row">
       <button
         class="filter-tag"
-        :class="{ active: activeCategory === null }"
-        @click="setActiveCategory()"
+        :class="{ active: activeCategory === categories }"
+        @click="setActiveCategory(categories)"
       >
         ALL
       </button>
@@ -101,8 +100,8 @@ const goToAnalytics = () => {
         v-for="cat in categories"
         :key="cat.id"
         class="filter-tag"
-        :class="{ active: activeCategory === cat }"
-        @click="setActiveCategory(cat.id)"
+        :class="{ active: activeCategory?.at(0) === cat }"
+        @click="setActiveCategory([cat])"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -132,15 +131,14 @@ const goToAnalytics = () => {
       <span class="progress-text">0% COMPLETE</span>
     </div>
     <div class="habits-list">
-      <div class="habit-item" v-for="habit in habits" :key="habit.id">
+      <div class="habit-item" v-for="habit in filteredHabits" :key="habit.id">
         <div class="habit-tags">
-          <span v-for="tag in habit.categoryIds" :key="tag"
-            ><Icon icon="mdi:tag-outline" />{{ tag }}</span
+          <span v-for="cat in habit.categoryIds" :key="cat"
+            ><Icon icon="mdi:tag-outline" />{{ cat }}</span
           >
         </div>
-        <div v-if="habit.categoryIds.includes(currentActiveCategory)">
-          <HabitsControlCard :habit="habit" />
-        </div>
+
+        <HabitsControlCard :habit="habit" />
       </div>
     </div>
     <AnalitycsButton @click="goToAnalytics" />

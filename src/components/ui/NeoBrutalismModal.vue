@@ -59,15 +59,15 @@
           <div class="category-grid">
             <button
               v-for="category in categories"
-              :key="category"
+              :key="category.id"
               type="button"
-              @click="form.category = category"
+              @click="form.category = category.title"
               :class="[
                 'category-btn',
-                { 'is-selected': form.category === category },
+                { 'is-selected': form.category === category.title },
               ]"
             >
-              {{ category }}
+              {{ category.title }}
             </button>
           </div>
         </div>
@@ -77,16 +77,17 @@
           <div class="color-row">
             <button
               v-for="color in colors"
-              :key="color.value"
+              :key="color"
               type="button"
-              @click="form.color = color.value"
-              :style="{ backgroundColor: color.hex }"
+              @click="form.color = color"
+              :style="{ backgroundColor: color }"
               :class="[
                 'color-picker-btn',
-                { 'is-selected': form.color === color.value },
+                { 'is-selected': form.color === color },
               ]"
-              :aria-label="`Select ${color.value} color`"
+              :aria-label="`Select ${color} color`"
             ></button>
+            <button @click="onAddColor">+</button>
           </div>
         </div>
 
@@ -110,29 +111,34 @@
 
 <script setup>
 import { reactive } from "vue";
+import { useHabitStore } from "@/stores/useHabitStore";
+import { number, z } from "zod";
+
+const formScheme = z.object({
+  title: z.string(),
+  description: z.string(),
+  target: z.number(),
+  unit: z.string(),
+  category: z.string(),
+  color: z.string(),
+  reminder: z.boolean(),
+});
 
 const emit = defineEmits(["close", "create"]);
 
+const useStore = useHabitStore();
+const onAddColor = () => {};
 const form = reactive({
-  title: "",
-  description: "",
-  target: null,
-  unit: "",
-  category: "OTHER",
-  color: "purple",
-  reminder: false,
+  title: z.string(),
+  description: z.string(),
+  target: z.number(),
+  unit: z.string(),
+  category: z.string(),
+  color: z.string(),
+  reminder: z.boolean(),
 });
 
-const categories = [
-  "HEALTH",
-  "FITNESS",
-  "LEARNING",
-  "MINDFULNESS",
-  "PRODUCTIVITY",
-  "CREATIVE",
-  "SOCIAL",
-  "OTHER",
-];
+const categories = useStore.fetchCategories();
 
 const props = defineProps({
   isOpen: {
@@ -141,17 +147,15 @@ const props = defineProps({
   },
 });
 
-const colors = [
-  { value: "yellow", hex: "#F4D03F" },
-  { value: "pink", hex: "#E54B86" },
-  { value: "cyan", hex: "#29D1E6" },
-  { value: "green", hex: "#7ED321" },
-  { value: "orange", hex: "#F5A623" },
-  { value: "purple", hex: "#6320EE" },
-];
+const colors = categories.map((cat) => cat.color);
 
 const handleSubmit = () => {
-  emit("create", { ...form });
+  const result = formScheme.safeParse(form.value);
+  if (result.success) {
+    console.log(form.value);
+  } else {
+    console.log("error parsing data");
+  }
 };
 </script>
 
@@ -316,6 +320,9 @@ const handleSubmit = () => {
   gap: 8px;
 }
 
+.color-row :last-child {
+  cursor: pointer;
+}
 .color-picker-btn {
   width: 40px;
   height: 40px;

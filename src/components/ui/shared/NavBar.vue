@@ -8,7 +8,7 @@
         :class="{ 'is-active': activeTab === tab.id }"
         @click="setActiveTab(tab.id)"
       >
-        <component :is="tab.icon" class="nav-icon" />
+        <Icon :icon="tab.icon" class="nav-icon" />
         <span class="nav-label">{{ tab.label }}</span>
       </button>
     </div>
@@ -16,32 +16,14 @@
 </template>
 
 <script setup>
-import { computed, h } from "vue";
+import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
-const HomeIcon = () => h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, [
-  h("path", { d: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" }),
-  h("polyline", { points: "9 22 9 12 15 12 15 22" })
-]);
-
-const HabitsIcon = () => h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, [
-  h("line", { x1: "4", y1: "6", x2: "14", y2: "6" }),
-  h("line", { x1: "4", y1: "12", x2: "11", y2: "12" }),
-  h("line", { x1: "4", y1: "18", x2: "11", y2: "18" }),
-  h("line", { x1: "16", y1: "12", x2: "22", y2: "12" }),
-  h("line", { x1: "19", y1: "9", x2: "19", y2: "15" })
-]);
-
-const AnalyticsIcon = () => h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, [
-  h("line", { x1: "6", y1: "20", x2: "6", y2: "12" }),
-  h("line", { x1: "12", y1: "20", x2: "12", y2: "4" }),
-  h("line", { x1: "18", y1: "20", x2: "18", y2: "10" })
-]);
+import { Icon } from "@iconify/vue";
 
 const tabs = [
-  { id: "today", label: "TODAY", icon: HomeIcon },
-  { id: "habits", label: "HABITS", icon: HabitsIcon },
-  { id: "analytics", label: "ANALYTICS", icon: AnalyticsIcon }
+  { id: "today", label: "TODAY", icon: "mynaui:home" },
+  { id: "habits", label: "HABITS", icon: "boxicons:list-plus" },
+  { id: "tracking", label: "TRACKING", icon: "mdi:graph-line" },
 ];
 
 const router = useRouter();
@@ -60,7 +42,11 @@ const setActiveTab = (id) => {
   background-color: #ffffff;
   border-top: 6px solid #000000;
   box-sizing: border-box;
+  position: fixed;
   bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 30;
 }
 
 .nav-container {
@@ -82,7 +68,9 @@ const setActiveTab = (id) => {
   color: #000000;
   cursor: pointer;
   padding: 10px 0;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .nav-item.is-active {
@@ -96,7 +84,8 @@ const setActiveTab = (id) => {
 }
 
 .nav-label {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.05em;

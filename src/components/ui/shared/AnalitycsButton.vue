@@ -32,13 +32,11 @@ defineEmits(["click"]);
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 10px;
   box-sizing: border-box;
 }
 
 .analytics-btn {
   width: 100%;
-  max-width: 1200px;
   background-color: #e53e7e;
   color: #ffffff;
   font-family:

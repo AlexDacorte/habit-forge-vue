@@ -1,3 +1,7 @@
+export const habitUnits = ["ml", "problem", "km", "minutes", "days", "weeks"] as const;
+
+export type HabitUnit = (typeof habitUnits)[number];
+
 export type Habit = {
   id: string;
   title: string;
@@ -5,11 +9,9 @@ export type Habit = {
   categoryIds: string[];
   progress: number;
   target: number;
-  unit: string;
+  unit: HabitUnit;
   color: string;
   createdAt: string;
-  archived: boolean;
-  reminderTime?: string;
 };
 
 export type HabitLog = {

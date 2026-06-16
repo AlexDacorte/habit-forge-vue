@@ -32,9 +32,27 @@
     },
     {
       "id": "hc-006",
-      "title": "money",
+      "title": "Money",
       "description": "Habits related to money making.",
       "color": "#FF5730"
+    },
+    {
+      "id": "hc-007",
+      "title": "Learning",
+      "description": "Habits focused on study and practice.",
+      "color": "#F59E0B"
+    },
+    {
+      "id": "hc-008",
+      "title": "Mindfulness",
+      "description": "Habits focused on calm and attention.",
+      "color": "#8B5CF6"
+    },
+    {
+      "id": "hc-009",
+      "title": "Recovery",
+      "description": "Habits related to rest and restoration.",
+      "color": "#A855F7"
     }
   ]
 }

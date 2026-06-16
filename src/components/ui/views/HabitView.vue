@@ -14,11 +14,13 @@
 import HabitsCardMinimal from "@/components/ui/shared/HabitsCardMinimal.vue";
 import type { Habit } from "@/types/habit";
 import { useHabitStore } from "@/stores/useHabitStore";
-import { ref, onMounted } from "vue";
+import { computed, onMounted } from "vue";
+
 const useStore = useHabitStore();
-const habits = ref<Habit[]>([]);
+const habits = computed(() => useStore.getHabits as Habit[]);
+
 onMounted(() => {
-  habits.value.push(...useStore.fetchHabits());
+  useStore.fetchHabits();
 });
 </script>
 <style scoped>

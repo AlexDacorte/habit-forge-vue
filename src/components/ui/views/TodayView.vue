@@ -8,13 +8,15 @@ import { useRouter } from "vue-router";
 import { ref, onMounted, computed } from "vue";
 import type { Habit } from "@/types/habit";
 import type { Category } from "@/types/category";
+import { isCreatedToday } from "@/utils/habit";
 
 const useStore = useHabitStore();
-const habits = ref<Habit[]>([] as Habit[]);
-const categories = ref<Category[]>([] as Category[]);
+const habits = computed(() => useStore.getHabits as Habit[]);
+const categories = computed(() => useStore.getCategories as Category[]);
+
 onMounted(() => {
-  habits.value.push(...useStore.fetchHabits());
-  categories.value.push(...useStore.fetchCategories());
+  useStore.fetchHabits();
+  useStore.fetchCategories();
 });
 
 const activeCategory = ref<Category[]>([] as Category[]);
@@ -26,7 +28,7 @@ const handleClickOpen = () => {
 };
 
 const handleCreate = () => {
-  console.log("form created");
+  isModalOpen.value = false;
 };
 
 const handleClickClose = () => {
@@ -40,13 +42,29 @@ const goToAnalytics = () => {
   router.push("/tracking");
 };
 
+const todaysHabits = computed(() =>
+  habits.value.filter((habit) => isCreatedToday(habit.createdAt)),
+);
+
 const filteredHabits = computed(() => {
   if (!activeCategory.value || activeCategory.value.length === 0) {
-    return habits.value;
+    return todaysHabits.value;
   }
-  return habits.value.filter((habit) =>
+  return todaysHabits.value.filter((habit) =>
     activeCategory?.value.every((cat) => habit.categoryIds.includes(cat.id)),
   );
+});
+
+const completedHabits = computed(
+  () => todaysHabits.value.filter((habit) => habit.progress >= habit.target).length,
+);
+
+const completionRate = computed(() => {
+  if (todaysHabits.value.length === 0) {
+    return 0;
+  }
+
+  return Math.round((completedHabits.value / todaysHabits.value.length) * 100);
 });
 
 const getCategoryToShow = (habit: Habit) => {
@@ -59,7 +77,9 @@ const getCategoryToShow = (habit: Habit) => {
     <header class="header-section">
       <div class="title-area">
         <h1 class="main-title">TODAY</h1>
-        <p class="subtitle">0/4 completed</p>
+        <p class="subtitle">
+          {{ completedHabits }}/{{ todaysHabits.length }} completed today
+        </p>
       </div>
 
       <button
@@ -132,11 +152,14 @@ const getCategoryToShow = (habit: Habit) => {
 
     <div class="progress-card">
       <div class="progress-track">
-        <div class="progress-fill" style="width: 0%"></div>
+        <div class="progress-fill" :style="{ width: `${completionRate}%` }"></div>
       </div>
-      <span class="progress-text">0% COMPLETE</span>
+      <span class="progress-text">{{ completionRate }}% COMPLETE</span>
     </div>
     <div class="habits-list">
+      <div v-if="filteredHabits.length === 0" class="empty-state">
+        No habits were created for today yet.
+      </div>
       <div class="habit-item" v-for="habit in filteredHabits" :key="habit.id">
         <div class="habit-tags">
           <span v-for="cat in getCategoryToShow(habit)" :key="cat.id"
@@ -318,6 +341,18 @@ const getCategoryToShow = (habit: Habit) => {
   .habit-item {
     display: flex;
     flex-direction: column;
+  }
+
+  .empty-state {
+    padding: 24px;
+    border: 4px solid #000000;
+    background: #ffffff;
+    box-shadow: 6px 6px 0 #000000;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
   }
 }
 

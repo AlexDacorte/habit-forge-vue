@@ -4,108 +4,178 @@
 
     <div class="card-content">
       <div class="header">
-        <h2 class="title">{{ props.habit.name }}</h2>
+        <h2 class="title">{{ habit.title }}</h2>
+        <p class="description">{{ habit.description }}</p>
         <p class="target-label">
-          Target: {{ props.habit.description }} glasses
+          Target: {{ formatValue(habit.target) }} {{ habit.unit }}
         </p>
       </div>
 
       <div class="progress-container">
         <div
           class="progress-fill"
-          :style="{ width: progressPercentage + '%' }"
+          :style="{ width: `${progressPercentage}%` }"
         ></div>
       </div>
 
-      <div class="controls-row">
+      <div v-if="unitConfig.mode === 'count'" class="controls-row">
         <div class="counter">
           <button
             class="btn"
-            @click="decrement"
-            :disabled="count <= 0"
-            aria-label="Decrease count"
+            :disabled="habit.progress <= 0"
+            aria-label="Decrease progress"
+            @click="applyDelta(-unitConfig.step)"
           >
             -
           </button>
 
-          <span class="count-display">{{ count }}</span>
+          <span class="count-display">{{ formatValue(habit.progress) }}</span>
 
           <button
             class="btn"
-            @click="increment"
-            :disabled="count >= target"
-            aria-label="Increase count"
+            :disabled="habit.progress >= habit.target"
+            :aria-label="unitConfig.actionLabel"
+            @click="applyDelta(unitConfig.step)"
           >
             +
           </button>
         </div>
 
-        <div class="total-label">/ {{ target }} glasses</div>
+        <div class="total-label">
+          / {{ formatValue(habit.target) }} {{ habit.unit }}
+        </div>
+      </div>
+
+      <div v-else class="measure-controls">
+        <label class="entry-field">
+          <span class="entry-label">Log {{ habit.unit }}</span>
+          <input
+            v-model.number="entryAmount"
+            type="number"
+            class="entry-input"
+            :min="unitConfig.min"
+            :step="unitConfig.step"
+          />
+        </label>
+
+        <div class="measure-actions">
+          <button
+            class="btn wide-btn"
+            :disabled="habit.progress >= habit.target"
+            @click="applyEntry"
+          >
+            +{{ formatValue(entryAmount) }} {{ habit.unit }}
+          </button>
+
+          <button
+            class="btn subtle-btn"
+            :disabled="habit.progress <= 0"
+            @click="applyDelta(-unitConfig.step)"
+          >
+            -{{ formatValue(unitConfig.step) }}
+          </button>
+        </div>
+
+        <div class="total-label">
+          {{ formatValue(habit.progress) }} / {{ formatValue(habit.target) }}
+          {{ habit.unit }}
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from "vue";
-const props = defineProps({
-  habit: {
-    type: Object,
-    required: true,
-  },
-});
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import { useHabitStore } from "@/stores/useHabitStore";
+import type { Habit } from "@/types/habit";
+import {
+  formatUnitValue,
+  getUnitConfig,
+  sanitizeProgressValue,
+} from "@/utils/habit";
 
-const count = ref(0);
+const props = defineProps<{
+  habit: Habit;
+}>();
 
+const useStore = useHabitStore();
+
+const unitConfig = computed(() => getUnitConfig(props.habit.unit));
+const currentColor = computed(() => props.habit.color || "#5ce1e6");
 const progressPercentage = computed(() => {
-  if (props.habit.progress <= 0) return 0;
-  return Math.min((count.value / props.habit.progress) * 100, 100);
-});
-
-const currentColor = computed(() => {
-  return props.habit.color || "#5ce1e6";
-});
-
-const increment = () => {
-  if (count.value < props.habit.progress) {
-    count.value++;
+  if (props.habit.target <= 0) {
+    return 0;
   }
+
+  return Math.min((props.habit.progress / props.habit.target) * 100, 100);
+});
+
+const entryAmount = ref(unitConfig.value.step);
+
+watch(
+  () => props.habit.unit,
+  () => {
+    entryAmount.value = getUnitConfig(props.habit.unit).step;
+  },
+  { immediate: true },
+);
+
+const formatValue = (value: number) => {
+  return formatUnitValue(value, unitConfig.value.decimals);
 };
 
-const decrement = () => {
-  if (count.value > 0) {
-    count.value--;
+const persistProgress = (nextValue: number) => {
+  const normalized = sanitizeProgressValue(
+    nextValue,
+    unitConfig.value.decimals,
+  );
+  const clamped = Math.min(normalized, props.habit.target);
+  useStore.updateHabitProgress(props.habit.id, clamped);
+};
+
+const applyDelta = (delta: number) => {
+  persistProgress(props.habit.progress + delta);
+};
+
+const applyEntry = () => {
+  const normalizedEntry = sanitizeProgressValue(
+    entryAmount.value || unitConfig.value.min,
+    unitConfig.value.decimals,
+  );
+
+  if (normalizedEntry <= 0) {
+    entryAmount.value = unitConfig.value.min;
+    return;
   }
+
+  persistProgress(props.habit.progress + normalizedEntry);
+  entryAmount.value = unitConfig.value.step;
 };
 </script>
 
 <style scoped>
 .tracker-card {
   position: relative;
-  font-family: "Courier New", Courier, monospace;
-  background-color: #fdfdf2;
-  border: 4px solid #000;
-  box-shadow: 8px 8px 0px #000;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  min-height: 220px;
+  border: 4px solid #000000;
+  background-color: #fdfdf2;
+  box-shadow: 8px 8px 0 #000000;
+  font-family: "Courier New", Courier, monospace;
   transition: all 0.1s ease-in-out;
-  height: 100%;
-  max-height: 200px;
-  cursor: pointer;
 }
 
 .tracker-card:hover {
   transform: translate(-2px, 1px);
-  box-shadow: 6px 6px 0px #000000;
-  transition: all 0.1s ease-in-out;
+  box-shadow: 6px 6px 0 #000000;
 }
 
 .color-band {
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
+  inset: 0 auto 0 0;
   width: 12px;
   background-color: v-bind(currentColor);
 }
@@ -113,93 +183,137 @@ const decrement = () => {
 .card-content {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  padding: 20px;
+  gap: 1.1rem;
+  padding: 20px 20px 20px 28px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .title {
-  margin: 0 0 8px 0;
-  font-size: 1.8rem;
-  text-transform: uppercase;
+  margin: 0;
+  font-size: 1.65rem;
   font-weight: 900;
-  color: #000;
-  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #000000;
 }
 
-.target-label {
+.description,
+.target-label,
+.total-label,
+.entry-label {
   margin: 0;
-  color: #555;
-  font-size: 1.1rem;
-  font-weight: bold;
+  color: #555555;
+  font-size: 0.98rem;
+  font-weight: 700;
 }
 
 .progress-container {
   width: 100%;
   height: 24px;
+  border: 3px solid #000000;
   background-color: #eae6db;
-  border: 3px solid #000;
   box-sizing: border-box;
 }
 
 .progress-fill {
   height: 100%;
   background-color: v-bind(currentColor);
-  transition: width 0.3s ease-in-out;
-  border-right: 2px solid #000;
+  border-right: 2px solid #000000;
+  transition: width 0.25s ease-in-out;
 }
-.progress-fill[style*="width: 0%"] {
+
+.progress-fill[style*="0%"] {
   border-right: none;
 }
 
-.controls-row {
+.controls-row,
+.measure-controls {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.counter {
+.counter,
+.measure-actions {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
 }
 
 .btn {
-  width: 44px;
-  background-color: #fff;
-  border: 4px solid #000;
-  box-shadow: 4px 4px 0 #000;
-  font-size: 1.5rem;
-  font-weight: bold;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 4px solid #000000;
+  background-color: #ffffff;
+  box-shadow: 4px 4px 0 #000000;
+  font-size: 1.05rem;
+  font-weight: 900;
+  font-family: inherit;
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   transition:
-    transform 0.1s,
-    box-shadow 0.1s;
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
 }
 
 .btn:active:not(:disabled) {
-  box-shadow: 0 0 0 #000;
   transform: translate(4px, 4px);
+  box-shadow: 0 0 0 #000000;
 }
 
 .btn:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
-  opacity: 0.4;
+}
+
+.wide-btn {
+  min-width: 160px;
+}
+
+.subtle-btn {
+  background: #fff7e8;
 }
 
 .count-display {
+  min-width: 46px;
+  text-align: center;
   font-size: 1.8rem;
   font-weight: 900;
-  min-width: 30px;
-  text-align: center;
-  color: #000;
+  color: #000000;
 }
 
-.total-label {
-  font-size: 1.1rem;
-  color: #555;
-  font-weight: bold;
+.entry-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.entry-input {
+  width: 120px;
+  padding: 10px 12px;
+  border: 3px solid #000000;
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: inherit;
+}
+
+@media (max-width: 720px) {
+  .card-content {
+    padding-right: 16px;
+  }
+
+  .measure-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .wide-btn {
+    flex: 1;
+  }
 }
 </style>

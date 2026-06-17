@@ -29,7 +29,7 @@ watch(
   ([habitId, habits]) => {
     const fromQuery = typeof habitId === "string" ? habitId : null;
     const validQueryHabit = fromQuery
-      ? habits.find((habit) => habit.id === fromQuery)?.id ?? null
+      ? (habits.find((habit) => habit.id === fromQuery)?.id ?? null)
       : null;
 
     selectedHabitId.value = validQueryHabit ?? habits[0]?.id ?? null;
@@ -39,7 +39,9 @@ watch(
 
 const selectedHabit = computed(() => {
   if (selectedHabitId.value) {
-    return activeHabits.value.find((habit) => habit.id === selectedHabitId.value);
+    return activeHabits.value.find(
+      (habit) => habit.id === selectedHabitId.value,
+    );
   }
   return activeHabits.value[0];
 });
@@ -77,7 +79,11 @@ const completionDates = computed(() =>
 
 const dailyData = computed(() =>
   selectedHabit.value
-    ? getDailyCompletionData(store.logs, selectedHabit.value, visibleRangeDays.value)
+    ? getDailyCompletionData(
+        store.logs,
+        selectedHabit.value,
+        visibleRangeDays.value,
+      )
     : [],
 );
 
@@ -92,12 +98,24 @@ const habitAgeDays = computed(() =>
 );
 
 const visibleRangeDays = computed(() =>
-  Math.max(1, Math.min(selectedRange.value, habitAgeDays.value || selectedRange.value)),
+  Math.max(
+    1,
+    Math.min(selectedRange.value, habitAgeDays.value || selectedRange.value),
+  ),
 );
 
 const dailyChartTitle = computed(() => {
   const days = visibleRangeDays.value;
   return `LAST ${days} DAY${days === 1 ? "" : "S"}`;
+});
+
+const targetLineBottom = computed(() => {
+  if (!selectedHabit.value) {
+    return "0%";
+  }
+
+  const ratio = (selectedHabit.value.target / chartMax.value) * 100;
+  return `${Math.min(88, Math.max(0, ratio))}%`;
 });
 
 const chartMax = computed(() => {
@@ -203,14 +221,20 @@ const chartMax = computed(() => {
         <div class="chart">
           <div
             class="target-line"
-            :style="{ bottom: `${(selectedHabit.target / chartMax) * 100}%` }"
+            :style="{ bottom: targetLineBottom }"
           >
             <span>Target</span>
           </div>
 
           <div class="bars">
-            <div v-for="entry in dailyData" :key="entry.rawDate" class="bar-group">
-              <span class="bar-value">{{ entry.value > 0 ? entry.value : "" }}</span>
+            <div
+              v-for="entry in dailyData"
+              :key="entry.rawDate"
+              class="bar-group"
+            >
+              <span class="bar-value">{{
+                entry.value > 0 ? entry.value : ""
+              }}</span>
               <div
                 class="bar"
                 :style="{
@@ -245,7 +269,6 @@ const chartMax = computed(() => {
           </div>
         </div>
       </section>
-
     </template>
   </section>
 </template>
@@ -376,6 +399,10 @@ const chartMax = computed(() => {
 
 .range-header {
   align-items: flex-start;
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  padding-bottom: 14px;
 }
 
 .range-selector {
@@ -462,8 +489,8 @@ const chartMax = computed(() => {
 
 .chart {
   position: relative;
-  min-height: 210px;
-  padding-top: 16px;
+  min-height: 236px;
+  padding-top: 14px;
 }
 
 .bars {
@@ -504,7 +531,7 @@ const chartMax = computed(() => {
 
 .target-line span {
   position: absolute;
-  top: -14px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
   background: #ffffff;
@@ -540,6 +567,5 @@ const chartMax = computed(() => {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
   }
-
 }
 </style>

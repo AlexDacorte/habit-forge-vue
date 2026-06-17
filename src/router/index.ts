@@ -8,10 +8,15 @@ import NotFoundView from "@/components/ui/views/NotFoundView.vue";
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    
     {
-      path: "/",
-      name: "Today",
-      component: TodayView,
+      path:"/",
+      redirect: '/today'
+    },
+    {
+      path:'/today',
+      name: 'Today',
+      component:TodayView
     },
     {
       path: "/habits",

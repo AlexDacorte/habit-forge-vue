@@ -6,7 +6,7 @@
         :key="tab.id"
         class="nav-item"
         :class="{ 'is-active': activeTab === tab.id }"
-        @click="setActiveTab(tab.id)"
+        @click="router.push(tab.path)"
       >
         <Icon :icon="tab.icon" class="nav-icon" />
         <span class="nav-label">{{ tab.label }}</span>
@@ -15,25 +15,29 @@
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 
 const tabs = [
-  { id: "today", label: "TODAY", icon: "mynaui:home" },
-  { id: "habits", label: "HABITS", icon: "boxicons:list-plus" },
-  { id: "tracking", label: "TRACKING", icon: "mdi:graph-line" },
+  { id: "today", label: "TODAY", icon: "mynaui:home", path: "/" },
+  { id: "habits", label: "HABITS", icon: "boxicons:list-plus", path: "/habits" },
+  { id: "analytics", label: "ANALYTICS", icon: "mdi:graph-line", path: "/analytics" },
 ];
 
 const router = useRouter();
 const route = useRoute();
 
-const activeTab = computed(() => route.path.replace("/", "") || "today");
-
-const setActiveTab = (id) => {
-  router.push(`/${id}`);
-};
+const activeTab = computed(() => {
+  if (route.path.startsWith("/habit/")) {
+    return "today";
+  }
+  if (route.path === "/") {
+    return "today";
+  }
+  return route.path.slice(1);
+});
 </script>
 
 <style scoped>
@@ -68,9 +72,6 @@ const setActiveTab = (id) => {
   color: #000000;
   cursor: pointer;
   padding: 10px 0;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
 }
 
 .nav-item.is-active {
@@ -84,15 +85,10 @@ const setActiveTab = (id) => {
 }
 
 .nav-label {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-}
-
-.nav-item:not(.is-active):hover {
-  background-color: #f5f5f5;
 }
 </style>

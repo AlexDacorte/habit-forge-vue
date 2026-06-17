@@ -13,13 +13,14 @@ import NavBar from "@/components/ui/shared/NavBar.vue";
 
 <style scoped>
 .app-content {
-  padding: 20px;
+  padding: 20px 20px 128px;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 8rem;
-  max-width: 1600px;
   width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 </style>

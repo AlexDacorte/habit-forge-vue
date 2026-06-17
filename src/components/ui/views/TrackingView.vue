@@ -1,192 +1,263 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
 import { Icon } from "@iconify/vue";
+import { computed, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useHabitStore } from "@/stores/useHabitStore";
+import {
+  getCompletionDates,
+  getCompletionRate,
+  getDailyCompletionData,
+  getHabitAgeInDays,
+  getStreak,
+  getWeeklyTrendData,
+  formatCompactDate,
+} from "@/utils/habit";
+import { resolveHabitColor } from "@/types/habit";
 
-type Habittracking = {
-  id: number;
-  name: string;
-  color: string;
-  currentStreak: number;
-  bestStreak: number;
-  completionRate: number;
-  dailyCompletions: number[];
+const store = useHabitStore();
+store.ensureLoaded();
+
+const route = useRoute();
+const router = useRouter();
+const selectedHabitId = ref<string | null>(null);
+const selectedRange = ref<7 | 30 | 365>(7);
+
+const activeHabits = computed(() => store.activeHabits);
+
+watch(
+  [() => route.query.habit, activeHabits],
+  ([habitId, habits]) => {
+    const fromQuery = typeof habitId === "string" ? habitId : null;
+    const validQueryHabit = fromQuery
+      ? habits.find((habit) => habit.id === fromQuery)?.id ?? null
+      : null;
+
+    selectedHabitId.value = validQueryHabit ?? habits[0]?.id ?? null;
+  },
+  { immediate: true },
+);
+
+const selectedHabit = computed(() => {
+  if (selectedHabitId.value) {
+    return activeHabits.value.find((habit) => habit.id === selectedHabitId.value);
+  }
+  return activeHabits.value[0];
+});
+
+const selectHabit = (habitId: string) => {
+  selectedHabitId.value = habitId;
+  router.replace({
+    path: "/analytics",
+    query: { habit: habitId },
+  });
 };
 
-const habits = [
-  {
-    id: 1,
-    name: "Drink Water",
-    color: "#37c9db",
-    currentStreak: 0,
-    bestStreak: 5,
-    completionRate: 14,
-    dailyCompletions: [0, 5, 8, 6, 8, 5, 8, 7, 7, 8, 6, 0, 0, 0],
-  },
-  {
-    id: 2,
-    name: "Read",
-    color: "#ffe593",
-    currentStreak: 3,
-    bestStreak: 7,
-    completionRate: 61,
-    dailyCompletions: [2, 4, 5, 3, 6, 4, 7, 5, 6, 7, 4, 5, 6, 4],
-  },
-  {
-    id: 3,
-    name: "Exercise",
-    color: "#f7a7b7",
-    currentStreak: 4,
-    bestStreak: 8,
-    completionRate: 68,
-    dailyCompletions: [3, 5, 6, 4, 7, 5, 8, 7, 6, 8, 5, 6, 7, 6],
-  },
-  {
-    id: 4,
-    name: "Meditate",
-    color: "#c7a5ef",
-    currentStreak: 6,
-    bestStreak: 9,
-    completionRate: 79,
-    dailyCompletions: [4, 6, 7, 6, 8, 7, 8, 8, 7, 8, 6, 7, 8, 7],
-  },
-] satisfies Habittracking[];
-
-const defaultHabit = habits[0] as Habittracking;
-
-const labels = [
-  "May 27",
-  "May 28",
-  "May 29",
-  "May 30",
-  "May 31",
-  "Jun 1",
-  "Jun 2",
-  "Jun 3",
-  "Jun 4",
-  "Jun 5",
-  "Jun 6",
-  "Jun 7",
-  "Jun 8",
-  "Jun 9",
-];
-
-const selectedHabitId = ref(defaultHabit.id);
-const chartMax = 8;
-
-const selectedHabit = computed<Habittracking>(
-  () =>
-    habits.find((habit) => habit.id === selectedHabitId.value) ?? defaultHabit,
+const streak = computed(() =>
+  selectedHabit.value
+    ? getStreak(store.logs, selectedHabit.value)
+    : { current: 0, best: 0 },
 );
 
-const targetLineOffset = computed(
-  () => `${100 - (chartMax / chartMax) * 100}%`,
+const completionRate = computed(() =>
+  selectedHabit.value
+    ? getCompletionRate(store.logs, selectedHabit.value, 7)
+    : 0,
 );
+
+const completionDates = computed(() =>
+  selectedHabit.value
+    ? getCompletionDates(store.logs, selectedHabit.value)
+        .slice(0, 8)
+        .map((date) => ({
+          raw: date,
+          label: formatCompactDate(date),
+        }))
+    : [],
+);
+
+const dailyData = computed(() =>
+  selectedHabit.value
+    ? getDailyCompletionData(store.logs, selectedHabit.value, visibleRangeDays.value)
+    : [],
+);
+
+const weeklyData = computed(() =>
+  selectedHabit.value
+    ? getWeeklyTrendData(store.logs, selectedHabit.value)
+    : [],
+);
+
+const habitAgeDays = computed(() =>
+  selectedHabit.value ? getHabitAgeInDays(selectedHabit.value) : 0,
+);
+
+const visibleRangeDays = computed(() =>
+  Math.max(1, Math.min(selectedRange.value, habitAgeDays.value || selectedRange.value)),
+);
+
+const dailyChartTitle = computed(() => {
+  const days = visibleRangeDays.value;
+  return `LAST ${days} DAY${days === 1 ? "" : "S"}`;
+});
+
+const chartMax = computed(() => {
+  if (!selectedHabit.value) {
+    return 1;
+  }
+  const values = dailyData.value.map((entry) => entry.value);
+  return Math.max(selectedHabit.value.target, ...values, 1);
+});
 </script>
 
 <template>
   <section class="tracking-view">
     <header class="tracking-header">
-      <h1 class="tracking-title">tracking</h1>
+      <h1 class="tracking-title">ANALYTICS</h1>
     </header>
 
-    <div class="habit-tabs" role="tablist" aria-label="Habit tracking filters">
-      <button
-        v-for="habit in habits"
-        :key="habit.id"
-        class="habit-tab"
-        :class="{ 'is-active': habit.id === selectedHabit.id }"
-        :style="{ '--tab-color': habit.color }"
-        :aria-pressed="habit.id === selectedHabit.id"
-        @click="selectedHabitId = habit.id"
-      >
-        {{ habit.name.toUpperCase() }}
-      </button>
+    <div v-if="activeHabits.length === 0" class="empty-state">
+      <strong>NO DATA YET</strong>
+      <p>Create habits and log data to see analytics.</p>
     </div>
 
-    <div class="stats-grid">
-      <article
-        class="stat-card stat-card-accent"
-        :style="{ '--accent-color': selectedHabit.color }"
-      >
-        <Icon icon="solar:flame-bold-outline" class="stat-icon" />
-        <strong class="stat-value">{{ selectedHabit.currentStreak }}</strong>
-        <span class="stat-label">CURRENT STREAK</span>
-      </article>
-
-      <article class="stat-card">
-        <Icon icon="solar:cup-star-bold-outline" class="stat-icon" />
-        <strong class="stat-value">{{ selectedHabit.bestStreak }}</strong>
-        <span class="stat-label">BEST STREAK</span>
-      </article>
-    </div>
-
-    <section class="panel">
-      <div class="panel-header">
-        <h2 class="panel-title">7-DAY COMPLETION</h2>
-        <span class="panel-metric">{{ selectedHabit.completionRate }}%</span>
+    <template v-else-if="selectedHabit">
+      <div class="habit-tabs">
+        <button
+          v-for="habit in activeHabits"
+          :key="habit.id"
+          class="habit-tab"
+          :class="{ 'is-active': habit.id === selectedHabit.id }"
+          :style="{ '--tab-color': resolveHabitColor(habit.color) }"
+          @click="selectHabit(habit.id)"
+        >
+          {{ habit.name.toUpperCase() }}
+        </button>
       </div>
-      <div class="completion-track" aria-hidden="true">
-        <div
-          class="completion-fill"
-          :style="{
-            width: `${selectedHabit.completionRate}%`,
-            backgroundColor: selectedHabit.color,
-          }"
-        />
+
+      <div class="stats-grid">
+        <article
+          class="stat-card stat-card-accent"
+          :style="{ '--accent-color': resolveHabitColor(selectedHabit.color) }"
+        >
+          <Icon icon="lucide:flame" class="stat-icon" />
+          <strong class="stat-value">{{ streak.current }}</strong>
+          <span class="stat-label">CURRENT STREAK</span>
+        </article>
+
+        <article class="stat-card">
+          <Icon icon="lucide:trophy" class="stat-icon" />
+          <strong class="stat-value">{{ streak.best }}</strong>
+          <span class="stat-label">BEST STREAK</span>
+        </article>
       </div>
-    </section>
 
-    <section class="panel chart-panel">
-      <h2 class="panel-title">LAST 14 DAYS</h2>
-
-      <div class="chart">
-        <div class="target-line" :style="{ bottom: targetLineOffset }">
-          <span>Target</span>
+      <section class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">7-DAY COMPLETION</h2>
+          <span class="panel-metric">{{ completionRate }}%</span>
         </div>
-
-        <div class="chart-grid" aria-hidden="true">
-          <span v-for="tick in chartMax + 1" :key="tick" class="chart-row" />
-        </div>
-
-        <div class="bars">
+        <div class="completion-track">
           <div
-            v-for="(value, index) in selectedHabit.dailyCompletions"
-            :key="labels[index]"
-            class="bar-group"
+            class="completion-fill"
+            :style="{
+              width: `${completionRate}%`,
+              backgroundColor: resolveHabitColor(selectedHabit.color),
+            }"
+          />
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">RECENT COMPLETIONS</h2>
+        <div v-if="completionDates.length > 0" class="completion-dates">
+          <article
+            v-for="date in completionDates"
+            :key="date.raw"
+            class="completion-card"
           >
-            <span class="bar-value">{{ value > 0 ? value : "" }}</span>
-            <div
-              class="bar"
-              :style="{
-                height: `${(value / chartMax) * 100}%`,
-                backgroundColor:
-                  value > 0 ? selectedHabit.color : 'transparent',
-              }"
-            />
-            <span class="bar-label">{{ labels[index] }}</span>
+            <span class="completion-pill">{{ date.label }}</span>
+          </article>
+        </div>
+        <p v-else class="empty-copy">No completed dates yet for this habit.</p>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="panel-header range-header">
+          <h2 class="panel-title">{{ dailyChartTitle }}</h2>
+          <div class="range-selector">
+            <button
+              v-for="option in [
+                { label: '1W', value: 7 },
+                { label: '1M', value: 30 },
+                { label: '1Y', value: 365 },
+              ]"
+              :key="option.label"
+              class="range-button"
+              :class="{ active: selectedRange === option.value }"
+              @click="selectedRange = option.value as 7 | 30 | 365"
+            >
+              {{ option.label }}
+            </button>
           </div>
         </div>
-      </div>
-    </section>
+        <div class="chart">
+          <div
+            class="target-line"
+            :style="{ bottom: `${(selectedHabit.target / chartMax) * 100}%` }"
+          >
+            <span>Target</span>
+          </div>
+
+          <div class="bars">
+            <div v-for="entry in dailyData" :key="entry.rawDate" class="bar-group">
+              <span class="bar-value">{{ entry.value > 0 ? entry.value : "" }}</span>
+              <div
+                class="bar"
+                :style="{
+                  height: `${(entry.value / chartMax) * 100}%`,
+                  backgroundColor:
+                    entry.value > 0
+                      ? resolveHabitColor(selectedHabit.color)
+                      : 'transparent',
+                }"
+              />
+              <span class="bar-label">{{ entry.date }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <Icon icon="lucide:trending-up" class="panel-heading-icon" />
+          <h2 class="panel-title">WEEKLY TRENDS</h2>
+        </div>
+        <div class="trend-list">
+          <div v-for="week in weeklyData" :key="week.week" class="trend-row">
+            <div>
+              <strong>{{ week.week }}</strong>
+              <span>{{ week.weekLabel }}</span>
+            </div>
+            <div class="trend-metrics">
+              <span>{{ week.average }} avg</span>
+              <span>{{ week.completionRate }}%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </template>
   </section>
 </template>
 
 <style scoped>
 .tracking-view {
   width: 100%;
-  max-width: 1120px;
-  padding: 28px 22px 36px;
-  box-sizing: border-box;
+  max-width: 780px;
+  padding: 24px 0 24px;
   display: flex;
   flex-direction: column;
   gap: 28px;
-  color: #111111;
-}
-
-.tracking-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 .tracking-title,
@@ -195,56 +266,20 @@ const targetLineOffset = computed(
 .panel-metric,
 .bar-label,
 .bar-value,
-.habit-tab {
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+.habit-tab,
+.completion-pill,
+.empty-copy {
+  font-family: var(--font-body);
 }
 
 .tracking-title {
   margin: 0;
-  font-size: clamp(2.6rem, 6vw, 4rem);
-  line-height: 0.95;
-  letter-spacing: 0;
+  font-size: clamp(2.5rem, 6vw, 3.3rem);
   font-weight: 900;
+  font-family: var(--font-title);
 }
 
-.habit-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.habit-tab {
-  min-height: 70px;
-  padding: 16px 26px;
-  border: 5px solid #111111;
-  background: #ffffff;
-  box-shadow: 7px 7px 0 #7d7a73;
-  font-size: clamp(0.95rem, 2vw, 1.1rem);
-  font-weight: 900;
-  cursor: pointer;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    background 0.12s ease;
-}
-
-.habit-tab.is-active {
-  background: var(--tab-color);
-}
-
-.habit-tab:hover {
-  transform: translate(2px, 2px);
-  box-shadow: 5px 5px 0 #7d7a73;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
-}
-
+.empty-state,
 .stat-card,
 .panel {
   border: 5px solid #111111;
@@ -252,9 +287,51 @@ const targetLineOffset = computed(
   background: #ffffff;
 }
 
+.empty-state {
+  padding: 32px;
+  text-align: center;
+}
+
+.habit-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.habit-tab {
+  padding: 12px 18px;
+  border: 5px solid #111111;
+  background: var(--tab-color);
+  box-shadow: 7px 7px 0 #7d7a73;
+  font-size: 0.85rem;
+  font-weight: 900;
+  cursor: pointer;
+  opacity: 0.55;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.habit-tab.is-active {
+  opacity: 1;
+}
+
+.habit-tab:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #7d7a73;
+  opacity: 1;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
 .stat-card {
-  min-height: 220px;
-  padding: 30px;
+  min-height: 180px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -267,49 +344,86 @@ const targetLineOffset = computed(
   background: var(--accent-color);
 }
 
-.stat-icon {
-  font-size: 3rem;
+.stat-icon,
+.panel-heading-icon {
+  width: 26px;
+  height: 26px;
 }
 
 .stat-value {
-  font-size: clamp(3.2rem, 7vw, 4.6rem);
-  line-height: 1;
+  font-size: clamp(2.4rem, 6vw, 3.5rem);
   font-weight: 900;
+  font-family: var(--font-title);
 }
 
 .stat-label {
-  font-size: clamp(1.2rem, 2.2vw, 1.9rem);
+  font-size: 0.95rem;
   font-weight: 900;
 }
 
 .panel {
-  padding: 30px 34px 34px;
+  padding: 18px 20px 20px;
 }
 
-.panel-header {
+.panel-header,
+.trend-row,
+.trend-metrics {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+}
+
+.range-header {
+  align-items: flex-start;
+}
+
+.range-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.range-button {
+  border: 3px solid #111111;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 #111111;
+  padding: 6px 10px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.range-button.active {
+  background: #111111;
+  color: #ffffff;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .panel-title {
   margin: 0;
-  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-size: 1.25rem;
   font-weight: 900;
+  font-family: var(--font-title);
 }
 
 .panel-metric {
-  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-size: 2rem;
   font-weight: 900;
+  font-family: var(--font-title);
 }
 
 .completion-track {
   height: 24px;
   border: 4px solid #111111;
   background: #efece1;
-  overflow: hidden;
 }
 
 .completion-fill {
@@ -317,124 +431,115 @@ const targetLineOffset = computed(
   border-right: 4px solid #111111;
 }
 
-.chart-panel {
+.completion-dates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.completion-card {
+  border: 3px solid #111111;
+  box-shadow: 4px 4px 0 #111111;
+  background: #ffffff;
+  min-height: 68px;
   display: flex;
-  flex-direction: column;
-  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.completion-pill {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.empty-copy {
+  margin: 0;
+  color: #666666;
 }
 
 .chart {
   position: relative;
-  padding: 30px 12px 0 56px;
-  min-height: 420px;
-}
-
-.chart-grid {
-  position: absolute;
-  inset: 28px 12px 48px 56px;
-  display: grid;
-  grid-template-rows: repeat(9, 1fr);
-  pointer-events: none;
-}
-
-.chart-row {
-  border-top: 2px dashed #e8decb;
+  min-height: 210px;
+  padding-top: 16px;
 }
 
 .bars {
-  position: relative;
-  z-index: 1;
-  min-height: 390px;
+  height: 180px;
   display: grid;
-  grid-template-columns: repeat(14, minmax(36px, 1fr));
+  grid-template-columns: repeat(14, minmax(0, 1fr));
+  gap: 10px;
   align-items: end;
-  gap: 14px;
-  border-left: 3px solid #777777;
-  border-bottom: 3px solid #777777;
-  padding: 0 8px 0 14px;
 }
 
 .bar-group {
-  height: 390px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: end;
-  align-items: stretch;
-  gap: 10px;
-}
-
-.bar-value {
-  min-height: 20px;
-  text-align: center;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: #555555;
+  gap: 8px;
 }
 
 .bar {
   width: 100%;
-  min-height: 0;
-  border: 4px solid #111111;
-  border-bottom-width: 0;
-  box-sizing: border-box;
+  border: 3px solid #111111;
+  border-bottom: none;
+  min-height: 2px;
 }
 
-.bar-label {
-  min-height: 40px;
+.bar-label,
+.bar-value {
+  font-size: 0.7rem;
   text-align: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #555555;
 }
 
 .target-line {
   position: absolute;
-  left: 56px;
-  right: 12px;
-  border-top: 3px dashed #6f6f6f;
-  z-index: 2;
+  left: 0;
+  right: 0;
+  border-top: 2px dashed #111111;
 }
 
 .target-line span {
   position: absolute;
-  top: -24px;
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
   background: #ffffff;
   padding: 0 8px;
-  font-size: 0.95rem;
+}
+
+.trend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.trend-row {
+  border: 3px solid #111111;
+  padding: 10px 12px;
+}
+
+.trend-row span {
+  display: block;
   color: #666666;
 }
 
-@media (max-width: 820px) {
-  .tracking-view {
-    padding: 22px 16px 28px;
-    gap: 22px;
-  }
-
+@media (max-width: 760px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
 
-  .panel {
-    padding: 22px 18px 24px;
-  }
-
-  .chart {
-    min-height: 360px;
-    padding-left: 22px;
-  }
-
-  .chart-grid,
-  .target-line {
-    left: 22px;
-  }
-
   .bars {
-    overflow-x: auto;
-    grid-template-columns: repeat(14, minmax(42px, 1fr));
-    gap: 10px;
-    padding-left: 10px;
+    gap: 6px;
   }
+
+  .bar-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
 }
 </style>

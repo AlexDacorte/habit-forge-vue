@@ -1,6 +1,44 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Roboto+Slab:wght@500;700;900&display=swap");
+
+:root {
+  --font-title: "Roboto Slab", serif;
+  --font-body: "Roboto Mono", monospace;
+  --neo-shadow: 4px 4px 0px #111111;
+  --neo-shadow-lg: 6px 6px 0px #111111;
+}
+
+html {
+  overflow-y: scroll;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   padding: 0;
   width: 100%;
-  background: #FFFBE6;
+  min-height: 100vh;
+  background: #fffbe6;
+  color: #111111;
+  font-family: var(--font-body);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-title);
 }

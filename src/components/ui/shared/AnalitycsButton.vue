@@ -5,12 +5,14 @@
       :class="{ 'btn-shadow': hasShadow }"
       @click="$emit('click')"
     >
-      {{ label }}
+      <span>{{ label }}</span>
+      <Icon icon="lucide:arrow-right" class="arrow-icon" />
     </button>
   </div>
 </template>
 
 <script setup>
+import { Icon } from "@iconify/vue";
 import { defineProps, defineEmits } from "vue";
 
 defineProps({
@@ -39,18 +41,20 @@ defineEmits(["click"]);
   width: 100%;
   background-color: #e53e7e;
   color: #ffffff;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
-  font-size: 1.15rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 20px 30px;
+  padding: 18px 24px;
   border: 5px solid #000000;
   cursor: pointer;
   position: relative;
   outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   transition:
     transform 0.1s ease,
     box-shadow 0.1s ease;
@@ -61,13 +65,17 @@ defineEmits(["click"]);
 }
 
 .analytics-btn:hover {
-  transform: translate(4px, 4px);
-  box-shadow: 0px 0px 2px 1px #000000;
-  animation: all 0.1s ease-in-out;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px #000000;
 }
 
 .analytics-btn:active {
-  transform: translate(3px, 3px);
-  box-shadow: 3px 3px 0px 0px #000000;
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px 0px #000000;
+}
+
+.arrow-icon {
+  width: 18px;
+  height: 18px;
 }
 </style>

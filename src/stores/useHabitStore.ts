@@ -1,100 +1,122 @@
 import { defineStore } from "pinia";
-import mockHabits from "@/mock/mockHabits.json";
-import mockCategories from "@/mock/mockCategories.json";
-import { habitUnits, type Habit } from "@/types/habit";
-import type { Category } from "@/types/category";
-import { getTodayDateKey } from "@/utils/habit";
+import type { Habit, HabitLog } from "@/types/habit";
 
-type HabitRecord = Omit<Habit, "unit" | "createdAt" | "archived"> & {
-  unit: string;
-  createdAt?: string;
-  archived?: boolean;
-};
+const HABITS_KEY = "habits-tracker-habits";
+const LOGS_KEY = "habits-tracker-logs";
+const CUSTOM_COLORS_KEY = "habits-tracker-custom-colors";
 
-const normalizeHabitUnit = (unit: string): Habit["unit"] => {
-  return habitUnits.includes(unit as Habit["unit"])
-    ? (unit as Habit["unit"])
-    : "problem";
-};
+function loadFromStorage<T>(key: string, fallback: T): T {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? (JSON.parse(stored) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
-const normalizeHabit = (habit: HabitRecord): Habit => ({
-  ...habit,
-  unit: normalizeHabitUnit(habit.unit),
-  createdAt: habit.createdAt ?? getTodayDateKey(),
-  archived: habit.archived ?? false,
-});
+function loadInitialState() {
+  const existingHabits = loadFromStorage<Habit[]>(HABITS_KEY, []).filter(
+    (habit) => !habit.id.startsWith("demo-"),
+  );
+  const validHabitIds = new Set(existingHabits.map((habit) => habit.id));
+  const existingLogs = loadFromStorage<HabitLog[]>(LOGS_KEY, []).filter(
+    (log) => validHabitIds.has(log.habitId),
+  );
+
+  return {
+    habits: existingHabits,
+    logs: existingLogs,
+    customColors: loadFromStorage<string[]>(CUSTOM_COLORS_KEY, []),
+  };
+}
+
+type NewHabit = Omit<Habit, "id" | "createdAt" | "archived">;
 
 export const useHabitStore = defineStore("habits", {
   state: () => ({
     habits: [] as Habit[],
-    categories: [] as Category[],
-    isLoading: false,
-    error: null,
+    logs: [] as HabitLog[],
+    customColors: [] as string[],
+    isLoaded: false,
   }),
   getters: {
-    getHabits: (state) => {
-      return state.habits;
-    },
-    getCategories: (state) => {
-      return state.categories;
-    },
+    activeHabits: (state) => state.habits.filter((habit) => !habit.archived),
   },
   actions: {
-    createHabit(...habit: Habit[]) {
-      this.habits = [...this.habits, ...habit.map(normalizeHabit)];
-      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
+    saveState() {
+      localStorage.setItem(HABITS_KEY, JSON.stringify(this.habits));
+      localStorage.setItem(LOGS_KEY, JSON.stringify(this.logs));
+      localStorage.setItem(CUSTOM_COLORS_KEY, JSON.stringify(this.customColors));
     },
-    updateHabitProgress(habitId: string, progress: number) {
-      this.habits = this.habits.map((habit) =>
-        habit.id === habitId ? { ...habit, progress } : habit,
-      );
-      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
-    },
-    updateHabit(updatedHabit: Habit) {
-      this.habits = this.habits.map((habit) =>
-        habit.id === updatedHabit.id ? normalizeHabit(updatedHabit) : habit,
-      );
-      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
-    },
-    deleteHabit(habitId: string) {
-      this.habits = this.habits.filter((habit) => habit.id !== habitId);
-      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
-    },
-    toggleArchiveHabit(habitId: string) {
-      this.habits = this.habits.map((habit) =>
-        habit.id === habitId ? { ...habit, archived: !habit.archived } : habit,
-      );
-      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
-    },
-    replaceHabits(habits: Habit[]) {
-      this.habits = habits.map(normalizeHabit);
-      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
-    },
-    createCategory(...category: Category[]) {
-      this.categories = [...this.categories, ...category];
-      localStorage.setItem("category-storage", JSON.stringify(this.categories));
-    },
-    fetchHabits() {
-      this.isLoading = true;
-      const storedHabits = localStorage.getItem("habit-storage");
-      if (storedHabits) {
-        this.habits = JSON.parse(storedHabits).map(normalizeHabit);
-      } else {
-        this.habits = mockHabits.habits.map(normalizeHabit);
+    ensureLoaded() {
+      if (this.isLoaded) {
+        return;
       }
-      this.isLoading = false;
-      return this.habits;
+
+      const initial = loadInitialState();
+      this.habits = initial.habits;
+      this.logs = initial.logs;
+      this.customColors = initial.customColors;
+      this.isLoaded = true;
+      this.saveState();
     },
-    fetchCategories() {
-      this.isLoading = true;
-      const storedCategories = localStorage.getItem("category-storage");
-      if (storedCategories) {
-        this.categories = JSON.parse(storedCategories);
-      } else {
-        this.categories = mockCategories.Categories;
+    addCustomColor(color: string) {
+      this.ensureLoaded();
+      if (!this.customColors.includes(color)) {
+        this.customColors = [...this.customColors, color];
+        this.saveState();
       }
-      this.isLoading = false;
-      return this.categories;
+    },
+    addHabit(habit: NewHabit) {
+      this.ensureLoaded();
+      const created: Habit = {
+        ...habit,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+        archived: false,
+      };
+      this.habits = [...this.habits, created];
+      this.saveState();
+      return created;
+    },
+    updateHabit(id: string, updates: Partial<Omit<Habit, "id" | "createdAt">>) {
+      this.ensureLoaded();
+      this.habits = this.habits.map((habit) =>
+        habit.id === id ? { ...habit, ...updates } : habit,
+      );
+      this.saveState();
+    },
+    deleteHabit(id: string) {
+      this.ensureLoaded();
+      this.habits = this.habits.filter((habit) => habit.id !== id);
+      this.logs = this.logs.filter((log) => log.habitId !== id);
+      this.saveState();
+    },
+    logHabit(habitId: string, date: string, value: number) {
+      this.ensureLoaded();
+      const filtered = this.logs.filter(
+        (log) => !(log.habitId === habitId && log.date === date),
+      );
+
+      this.logs =
+        value > 0
+          ? [...filtered, { habitId, date, value }]
+          : filtered;
+
+      this.saveState();
+    },
+    getLog(habitId: string, date: string) {
+      return this.logs.find((log) => log.habitId === habitId && log.date === date)
+        ?.value ?? 0;
+    },
+    getLogsForHabit(habitId: string) {
+      return this.logs.filter((log) => log.habitId === habitId);
+    },
+    importData(habits: Habit[], logs: HabitLog[]) {
+      this.habits = habits;
+      this.logs = logs;
+      this.isLoaded = true;
+      this.saveState();
     },
   },
 });

@@ -4,7 +4,9 @@
 
     <div class="modal-body">
       <div class="modal-header">
-        <h2 class="modal-title">New Habit</h2>
+        <h2 class="modal-title">
+          {{ mode === "edit" ? "Edit Habit" : "New Habit" }}
+        </h2>
         <button type="button" class="close-btn" @click="$emit('close')">
           ✕
         </button>
@@ -111,14 +113,16 @@
           <p v-if="errors.color" class="form-error">{{ errors.color }}</p>
         </div>
 
-        <button type="submit" class="submit-btn">Create Habit</button>
+        <button type="submit" class="submit-btn">
+          {{ mode === "edit" ? "Save Changes" : "Create Habit" }}
+        </button>
       </form>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, watch } from "vue";
 import { useHabitStore } from "@/stores/useHabitStore";
 import { habitFormSchema } from "@/schemas/habit";
 import { habitUnits, type Habit } from "@/types/habit";
@@ -128,12 +132,21 @@ import { getTodayDateKey } from "@/utils/habit";
 const emit = defineEmits<{
   close: [];
   create: [habit: Habit];
+  update: [habit: Habit];
 }>();
 
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false,
+  },
+  mode: {
+    type: String as () => "create" | "edit",
+    default: "create",
+  },
+  initialHabit: {
+    type: Object as () => Habit | null,
+    default: null,
   },
 });
 
@@ -160,9 +173,32 @@ const clearErrors = () => {
 };
 
 const resetForm = () => {
-  Object.assign(form, createInitialForm());
+  if (props.mode === "edit" && props.initialHabit) {
+    Object.assign(form, {
+      title: props.initialHabit.title,
+      description: props.initialHabit.description,
+      categoryIds: [...props.initialHabit.categoryIds],
+      progress: props.initialHabit.progress,
+      target: props.initialHabit.target,
+      unit: props.initialHabit.unit,
+      color: props.initialHabit.color,
+      createdAt: props.initialHabit.createdAt,
+    });
+  } else {
+    Object.assign(form, createInitialForm());
+  }
   clearErrors();
 };
+
+watch(
+  () => [props.isOpen, props.mode, props.initialHabit] as const,
+  () => {
+    if (props.isOpen) {
+      resetForm();
+    }
+  },
+  { immediate: true },
+);
 
 const toggleCategory = (categoryId: string) => {
   form.categoryIds = form.categoryIds.includes(categoryId)
@@ -184,14 +220,20 @@ const handleSubmit = () => {
     return;
   }
 
-  const newHabit: Habit = {
-    id: crypto.randomUUID(),
-    progress: 0,
+  const habitPayload: Habit = {
+    id: props.initialHabit?.id ?? crypto.randomUUID(),
+    progress: props.initialHabit?.progress ?? 0,
+    archived: props.initialHabit?.archived ?? false,
     ...parsed.data,
   };
 
-  useStore.createHabit(newHabit);
-  emit("create", newHabit);
+  if (props.mode === "edit") {
+    useStore.updateHabit(habitPayload);
+    emit("update", habitPayload);
+  } else {
+    useStore.createHabit(habitPayload);
+    emit("create", habitPayload);
+  }
   emit("close");
   resetForm();
 };

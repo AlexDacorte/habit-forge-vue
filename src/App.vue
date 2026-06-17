@@ -19,5 +19,7 @@ import NavBar from "@/components/ui/shared/NavBar.vue";
   flex-direction: column;
   align-items: center;
   margin-bottom: 8rem;
+  max-width: 1600px;
+  width: 100%;
 }
 </style>

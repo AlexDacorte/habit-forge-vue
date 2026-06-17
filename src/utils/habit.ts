@@ -37,6 +37,20 @@ const unitConfigMap: Record<HabitUnit, UnitConfig> = {
     decimals: 0,
     actionLabel: "Log time",
   },
+  days: {
+    mode: "count",
+    step: 1,
+    min: 1,
+    decimals: 0,
+    actionLabel: "Mark day",
+  },
+  weeks: {
+    mode: "count",
+    step: 1,
+    min: 1,
+    decimals: 0,
+    actionLabel: "Mark week",
+  },
 };
 
 export const getTodayDateKey = (date = new Date()) => {

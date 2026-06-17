@@ -5,9 +5,10 @@ import { habitUnits, type Habit } from "@/types/habit";
 import type { Category } from "@/types/category";
 import { getTodayDateKey } from "@/utils/habit";
 
-type HabitRecord = Omit<Habit, "unit" | "createdAt"> & {
+type HabitRecord = Omit<Habit, "unit" | "createdAt" | "archived"> & {
   unit: string;
   createdAt?: string;
+  archived?: boolean;
 };
 
 const normalizeHabitUnit = (unit: string): Habit["unit"] => {
@@ -20,6 +21,7 @@ const normalizeHabit = (habit: HabitRecord): Habit => ({
   ...habit,
   unit: normalizeHabitUnit(habit.unit),
   createdAt: habit.createdAt ?? getTodayDateKey(),
+  archived: habit.archived ?? false,
 });
 
 export const useHabitStore = defineStore("habits", {
@@ -46,6 +48,26 @@ export const useHabitStore = defineStore("habits", {
       this.habits = this.habits.map((habit) =>
         habit.id === habitId ? { ...habit, progress } : habit,
       );
+      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
+    },
+    updateHabit(updatedHabit: Habit) {
+      this.habits = this.habits.map((habit) =>
+        habit.id === updatedHabit.id ? normalizeHabit(updatedHabit) : habit,
+      );
+      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
+    },
+    deleteHabit(habitId: string) {
+      this.habits = this.habits.filter((habit) => habit.id !== habitId);
+      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
+    },
+    toggleArchiveHabit(habitId: string) {
+      this.habits = this.habits.map((habit) =>
+        habit.id === habitId ? { ...habit, archived: !habit.archived } : habit,
+      );
+      localStorage.setItem("habit-storage", JSON.stringify(this.habits));
+    },
+    replaceHabits(habits: Habit[]) {
+      this.habits = habits.map(normalizeHabit);
       localStorage.setItem("habit-storage", JSON.stringify(this.habits));
     },
     createCategory(...category: Category[]) {

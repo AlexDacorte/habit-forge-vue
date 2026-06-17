@@ -12,6 +12,7 @@ export type Habit = {
   unit: HabitUnit;
   color: string;
   createdAt: string;
+  archived: boolean;
 };
 
 export type HabitLog = {

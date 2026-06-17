@@ -1,0 +1,64 @@
+{
+  "habits": [
+    {
+      "id": "hb-001",
+      "title": "Morning Hydration",
+      "description": "Drink water immediately after waking up to kickstart metabolism.",
+      "categoryIds": ["hc-001", "hc-002"],
+      "target": 2000,
+      "unit": "ml",
+      "progress": 0,
+      "color": "#3B82F6",
+      "createdAt": "2026-06-16",
+      "archived": false
+    },
+    {
+      "id": "hb-002",
+      "title": "Daily LeetCode Challenge",
+      "description": "Solve at least one medium-level algorithm problem to stay sharp.",
+      "categoryIds": ["hc-003", "hc-004"],
+      "target": 1,
+      "unit": "problem",
+      "progress": 0,
+      "color": "#10B981",
+      "createdAt": "2026-06-16",
+      "archived": false
+    },
+    {
+      "id": "hb-003",
+      "title": "Evening Cardio Running",
+      "description": "Outdoor running session or treadmill intervals at the gym.",
+      "categoryIds": ["hc-005"],
+      "target": 5,
+      "unit": "km",
+      "progress": 0,
+      "color": "#EF4444",
+      "createdAt": "2026-06-15",
+      "archived": false
+    },
+    {
+      "id": "hb-004",
+      "title": "Read Tech Documentation",
+      "description": "Read through framework documentation or software architecture articles.",
+      "categoryIds": ["hc-006", "hc-007"],
+      "target": 30,
+      "unit": "minutes",
+      "progress": 0,
+      "color": "#F59E0B",
+      "createdAt": "2026-06-16",
+      "archived": false
+    },
+    {
+      "id": "hb-005",
+      "title": "Mindful Meditation",
+      "description": "Deep breathing exercises and mindfulness to decompress.",
+      "categoryIds": ["hc-008", "hc-009"],
+      "target": 15,
+      "unit": "minutes",
+      "progress": 0,
+      "color": "#8B5CF6",
+      "createdAt": "2026-06-14",
+      "archived": false
+    }
+  ]
+}
